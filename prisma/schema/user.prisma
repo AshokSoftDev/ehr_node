@@ -1,0 +1,98 @@
+// ------------------- USER -------------------
+model User {
+    userId      String    @id @default(uuid())
+    fullName    String
+    firstName   String
+    lastName    String
+    email       String    @unique
+    phoneNumber String? // optional
+    groupId     String? // root user may not belong to any group
+    password    String
+    createdAt   DateTime  @default(now())
+    createdBy   String?
+    updatedAt   DateTime  @updatedAt
+    updatedBy   String?
+    userStatus  Int       @default(1) // 1=active, 0=inactive
+    dob         DateTime? // optional
+    otp         String?
+    otpExpiry   DateTime?
+
+    group Group? @relation(fields: [groupId], references: [id])
+
+    @@index([email])
+    @@index([groupId])
+    @@index([userStatus])
+}
+
+// ------------------- GROUP -------------------
+model Group {
+    id          String   @id @default(uuid())
+    name        String   @unique
+    description String?
+    createdAt   DateTime @default(now())
+    createdBy   String?
+    updatedAt   DateTime @updatedAt
+    updatedBy   String?
+
+    users                User[]
+    permissions          GroupModulePermission[]
+    subModulePermissions GroupSubModulePermission[]
+}
+
+// ------------------- MODULE -------------------
+model Module {
+    id          String   @id @default(uuid())
+    name        String   @unique
+    description String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    subModules  SubModule[]
+    permissions GroupModulePermission[]
+}
+
+// ------------------- SUB-MODULE (Dynamic Actions) -------------------
+model SubModule {
+    id          String  @id @default(uuid())
+    moduleId    String
+    name        String // e.g. "Add", "Edit", "Delete", "Export"
+    description String?
+
+    module      Module                     @relation(fields: [moduleId], references: [id])
+    permissions GroupSubModulePermission[]
+
+    @@unique([moduleId, name]) // one action per module
+}
+
+// ------------------- GROUP MODULE PERMISSION -------------------
+model GroupModulePermission {
+    id        String  @id @default(uuid())
+    groupId   String
+    moduleId  String
+    hasAccess Boolean @default(true)
+
+    group                Group                      @relation(fields: [groupId], references: [id])
+    module               Module                     @relation(fields: [moduleId], references: [id])
+    subModulePermissions GroupSubModulePermission[]
+
+    @@unique([groupId, moduleId])
+    @@index([groupId])
+    @@index([moduleId])
+}
+
+// ------------------- GROUP SUB-MODULE PERMISSION -------------------
+model GroupSubModulePermission {
+    id                      String  @id @default(uuid())
+    groupId                 String
+    subModuleId             String
+    allowed                 Boolean @default(false)
+    groupModulePermissionId String?
+
+    group                 Group                  @relation(fields: [groupId], references: [id])
+    subModule             SubModule              @relation(fields: [subModuleId], references: [id])
+    groupModulePermission GroupModulePermission? @relation(fields: [groupModulePermissionId], references: [id])
+
+    @@unique([groupId, subModuleId])
+    @@index([groupId])
+    @@index([subModuleId])
+}
