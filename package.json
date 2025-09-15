@@ -2,10 +2,10 @@
   "name": "node",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "nodemon --exec ts-node src/server.ts",
     "start": "node dist/server.js",
     "prisma:merge": "node scripts/merge-prisma-schemas.js",
     "prisma:generate": "npm run prisma:merge && prisma generate",
@@ -18,13 +18,18 @@
   "dependencies": {
     "@prisma/client": "^6.15.0",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.15.0",
     "zod": "^4.1.4"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.3.0",

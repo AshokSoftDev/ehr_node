@@ -8,3 +8,7 @@ export function errorHandler(err: any, _req: Request, res: Response, _next: Next
   }
   res.status(status).json({ message });
 }
+
+export function notFound(_req: Request, res: Response) {
+  res.status(404).json({ message: 'Not Found' });
+}

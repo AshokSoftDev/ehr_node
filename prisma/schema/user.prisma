@@ -1,27 +1,45 @@
 // ------------------- USER -------------------
 model User {
-    userId      String    @id @default(uuid())
+    userId      String  @id @default(uuid())
+    title       String
     fullName    String
     firstName   String
     lastName    String
-    email       String    @unique
+    email       String  @unique
     phoneNumber String? // optional
     groupId     String? // root user may not belong to any group
     password    String
-    createdAt   DateTime  @default(now())
-    createdBy   String?
-    updatedAt   DateTime  @updatedAt
-    updatedBy   String?
-    userStatus  Int       @default(1) // 1=active, 0=inactive
-    dob         DateTime? // optional
-    otp         String?
-    otpExpiry   DateTime?
+
+    parentId    String?
+    accountType String  @default("child")
+
+    createdAt DateTime @default(now())
+    createdBy String?
+    updatedAt DateTime @updatedAt
+    updatedBy String?
+
+    userStatus Int       @default(1) // 1=active, 0=inactive
+    dob        DateTime? // optional
+    otp        String?
+    otpExpiry  DateTime?
 
     group Group? @relation(fields: [groupId], references: [id])
+
+    parent   User?  @relation("ParentChild", fields: [parentId], references: [userId])
+    children User[] @relation("ParentChild")
+
+    creator      User?  @relation("UserCreator", fields: [createdBy], references: [userId])
+    createdUsers User[] @relation("UserCreator")
+
+    updater      User?  @relation("UserUpdater", fields: [updatedBy], references: [userId])
+    updatedUsers User[] @relation("UserUpdater")
 
     @@index([email])
     @@index([groupId])
     @@index([userStatus])
+    @@index([parentId])
+    @@index([accountType])
+    @@index([createdBy])
 }
 
 // ------------------- GROUP -------------------

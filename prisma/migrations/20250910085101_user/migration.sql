@@ -2,6 +2,7 @@
 CREATE TABLE "public"."User" (
     "userId" TEXT NOT NULL,
     "fullName" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
     "email" TEXT NOT NULL,
