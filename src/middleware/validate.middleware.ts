@@ -10,26 +10,41 @@ export function validate(schema: ZodSchema<any>) {
         query: req.query,
         params: req.params,
       });
-
-      // Type-safe assignment
+      
+      // Force reassign using Object.defineProperty
       if (validated.body !== undefined) {
-        req.body = validated.body;
+        Object.defineProperty(req, 'body', {
+          value: validated.body,
+          writable: true,
+          enumerable: true,
+          configurable: true
+        });
       }
+      
       if (validated.query !== undefined) {
-        req.query = validated.query;
+        Object.defineProperty(req, 'query', {
+          value: validated.query,
+          writable: true,
+          enumerable: true,
+          configurable: true
+        });
       }
+      
       if (validated.params !== undefined) {
-        req.params = validated.params;
+        Object.defineProperty(req, 'params', {
+          value: validated.params,
+          writable: true,
+          enumerable: true,
+          configurable: true
+        });
       }
-
+      
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        // Use 'issues' instead of 'errors'
         const errorMessage = error.issues
           .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
           .join(', ');
-
         next(new AppError(errorMessage, 400));
       } else {
         next(new AppError('Validation failed', 400));
@@ -38,14 +53,18 @@ export function validate(schema: ZodSchema<any>) {
   };
 }
 
-
-
 export function validateQuery(schema: ZodSchema<any>) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log(req.query);
+      const validatedQuery = await schema.parseAsync(req.query || {});
       
-      req.query = await schema.parseAsync(req.query || {});
+      Object.defineProperty(req, 'query', {
+        value: validatedQuery,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      });
+      
       next();
     } catch (error) {
       handleValidationError(error, next);
@@ -53,11 +72,18 @@ export function validateQuery(schema: ZodSchema<any>) {
   };
 }
 
-// Specific validation for body
 export function validateBody(schema: ZodSchema<any>) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      req.body = await schema.parseAsync(req.body);
+      const validatedBody = await schema.parseAsync(req.body);
+      
+      Object.defineProperty(req, 'body', {
+        value: validatedBody,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      });
+      
       next();
     } catch (error) {
       handleValidationError(error, next);
@@ -65,11 +91,18 @@ export function validateBody(schema: ZodSchema<any>) {
   };
 }
 
-// Specific validation for params
 export function validateParams(schema: ZodSchema<any>) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      req.params = await schema.parseAsync(req.params);
+      const validatedParams = await schema.parseAsync(req.params);
+      
+      Object.defineProperty(req, 'params', {
+        value: validatedParams,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      });
+      
       next();
     } catch (error) {
       handleValidationError(error, next);
