@@ -37,3 +37,53 @@ export function validate(schema: ZodSchema<any>) {
     }
   };
 }
+
+
+
+export function validateQuery(schema: ZodSchema<any>) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      console.log(req.query);
+      
+      req.query = await schema.parseAsync(req.query || {});
+      next();
+    } catch (error) {
+      handleValidationError(error, next);
+    }
+  };
+}
+
+// Specific validation for body
+export function validateBody(schema: ZodSchema<any>) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      req.body = await schema.parseAsync(req.body);
+      next();
+    } catch (error) {
+      handleValidationError(error, next);
+    }
+  };
+}
+
+// Specific validation for params
+export function validateParams(schema: ZodSchema<any>) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      req.params = await schema.parseAsync(req.params);
+      next();
+    } catch (error) {
+      handleValidationError(error, next);
+    }
+  };
+}
+
+function handleValidationError(error: unknown, next: NextFunction) {
+  if (error instanceof ZodError) {
+    const errorMessage = error.issues
+      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+      .join(', ');
+    next(new AppError(errorMessage, 400));
+  } else {
+    next(new AppError('Validation failed', 400));
+  }
+}

@@ -16,11 +16,36 @@ const groupController = new GroupController();
 router.use(authenticate); 
 
 router.get('/modules', groupController.getModules);
-router.post('/', requireRole('parent'), validate(createGroupSchema), groupController.createGroup);
-router.get('/', groupController.listGroups);
-// router.get('/', validate(listGroupsSchema), groupController.listGroups);
-router.get('/:groupId', validate(getGroupSchema), groupController.getGroup);
-router.put('/:groupId', requireRole('parent'), validate(updateGroupSchema), groupController.updateGroup);
-router.delete('/:groupId', requireRole('parent'), validate(deleteGroupSchema), groupController.deleteGroup);
+
+
+router.post(
+    '/',
+    validate(createGroupSchema),
+    groupController.createGroup
+  );
+  
+  router.get(
+    '/',
+    // validate(listGroupsSchema),
+    groupController.listGroups
+  );
+  
+  router.get(
+    '/:id',
+    validate(getGroupSchema),
+    groupController.getGroup
+  );
+  
+  router.put(
+    '/:id',
+    validate(updateGroupSchema),
+    groupController.updateGroup
+  );
+  
+  router.delete(
+    '/:id',
+    validate(deleteGroupSchema),
+    groupController.deleteGroup
+  );
 
 export default router;

@@ -1,0 +1,40 @@
+model Doctor {
+    id           String   @id @default(uuid())
+    title        String
+    firstName    String
+    lastName     String
+    dob          DateTime
+    email        String   @unique
+    licenceNo    String   @unique
+    degree       String
+    specialty    String
+    timeBlock    String? // optional - stores values like "5min", "10min", "15min", "30min", "1hr", "1.5hr", "2hr", "3hr"
+    displayName  String
+    displayColor String // hex color code
+
+    // Optional address fields
+    address String?
+    area    String?
+    city    String?
+    state   String?
+    country String?
+    pincode String?
+
+    // Status field
+    status Int @default(1) // 1=active, 0=inactive
+
+    // Audit fields
+    createdAt DateTime  @default(now())
+    createdBy String?
+    updatedAt DateTime  @updatedAt
+    updatedBy String?
+    deletedAt DateTime?
+    deletedBy String?
+
+    @@index([email])
+    @@index([licenceNo])
+    @@index([specialty])
+    @@index([status])
+    @@index([createdAt])
+    @@index([deletedAt])
+}

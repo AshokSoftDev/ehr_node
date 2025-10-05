@@ -1,78 +1,230 @@
 import { GroupRepository } from './group.repository';
 import { CreateGroupDto, UpdateGroupDto, GroupFilters } from './group.types';
-import { AppError } from '../../utils/errors';
 import { prisma } from '../../utils/prisma';
 
 export class GroupService {
-    private groupRepository = new GroupRepository();
+  private groupRepository: GroupRepository;
 
-    async createGroup(dto: CreateGroupDto, userId: string) {
-        const existingGroup = await this.groupRepository.findByName(dto.name);
-        if (existingGroup) {
-            throw new AppError('Group name already exists', 409);
-        }
+  constructor() {
+    this.groupRepository = new GroupRepository();
+  }
 
-        const { permissions, ...groupData } = dto;
-        const group = await this.groupRepository.createWithPermissions({
-            ...groupData,
-            createdBy: userId,
-        }, permissions);
-
-        return group;
+  async createGroup(data: CreateGroupDto, createdBy?: string) {
+    // Check if group name already exists
+    const existingGroup = await this.groupRepository.findByName(data.name);
+    if (existingGroup) {
+      throw new Error('Group name already exists');
     }
 
-    async getGroup(groupId: string) {
-        const group = await this.groupRepository.findByIdWithPermissions(groupId);
-        if (!group) {
-            throw new AppError('Group not found', 404);
-        }
-        return group;
-    }
+    // Use transaction to ensure data consistency
+    return await prisma.$transaction(async (tx) => {
+      // Create group
+      const group = await tx.group.create({
+        data: {
+          name: data.name,
+          description: data.description,
+          createdBy,
+        },
+      });
 
-    async updateGroup(groupId: string, dto: UpdateGroupDto, userId: string) {
-        const group = await this.groupRepository.findById(groupId);
-        if (!group) {
-            throw new AppError('Group not found', 404);
-        }
+      // Create permissions
+      if (data.permissions && data.permissions.length > 0) {
+        for (const permission of data.permissions) {
+          if (permission.hasAccess) {
+            // Create module permission
+            const modulePermission = await tx.groupModulePermission.create({
+              data: {
+                groupId: group.id,
+                moduleId: permission.moduleId,
+                hasAccess: permission.hasAccess,
+              },
+            });
 
-        if (dto.name && dto.name !== group.name) {
-            const existingGroup = await this.groupRepository.findByName(dto.name);
-            if (existingGroup) {
-                throw new AppError('Group name already exists', 409);
+            // Create sub-module permissions
+            if (permission.subModules && permission.subModules.length > 0) {
+              const subModuleData = permission.subModules
+                .filter(sub => sub.allowed)
+                .map(sub => ({
+                  groupId: group.id,
+                  subModuleId: sub.subModuleId,
+                  allowed: sub.allowed,
+                  groupModulePermissionId: modulePermission.id,
+                }));
+
+              if (subModuleData.length > 0) {
+                await tx.groupSubModulePermission.createMany({
+                  data: subModuleData,
+                });
+              }
             }
+          }
         }
+      }
 
-        const { permissions, ...groupData } = dto;
-        return this.groupRepository.updateWithPermissions(groupId, {
-            ...groupData,
-            updatedBy: userId,
-        }, permissions);
+      // Return created group with permissions
+      return await this.groupRepository.findById(group.id);
+    });
+  }
+
+  async updateGroup(id: string, data: UpdateGroupDto, updatedBy?: string) {
+    // Check if group exists
+    const existingGroup = await this.groupRepository.findById(id);
+    if (!existingGroup) {
+      throw new Error('Group not found');
     }
 
-    async deleteGroup(groupId: string) {
-        const group = await this.groupRepository.findById(groupId);
-        if (!group) {
-            throw new AppError('Group not found', 404);
+    if(id == "6b9fd470-bc05-4465-9ed8-7f6f093d337c"){
+        throw new Error('Cannot update default group');
+    }
+
+    // Check if new name conflicts with another group
+    if (existingGroup.name !== data.name) {
+      const nameConflict = await this.groupRepository.findByName(data.name);
+      if (nameConflict) {
+        throw new Error('Group name already exists');
+      }
+    }
+
+    // Use transaction to ensure data consistency
+    return await prisma.$transaction(async (tx) => {
+      // Update group basic info
+      await tx.group.update({
+        where: { id },
+        data: {
+          name: data.name,
+          description: data.description,
+          updatedBy,
+        },
+      });
+
+      // Delete existing permissions
+      await tx.groupSubModulePermission.deleteMany({
+        where: { groupId: id },
+      });
+      await tx.groupModulePermission.deleteMany({
+        where: { groupId: id },
+      });
+
+      // Create new permissions
+      if (data.permissions && data.permissions.length > 0) {
+        for (const permission of data.permissions) {
+          if (permission.hasAccess) {
+            // Create module permission
+            const modulePermission = await tx.groupModulePermission.create({
+              data: {
+                groupId: id,
+                moduleId: permission.moduleId,
+                hasAccess: permission.hasAccess,
+              },
+            });
+
+            // Create sub-module permissions
+            if (permission.subModules && permission.subModules.length > 0) {
+              const subModuleData = permission.subModules
+                .filter(sub => sub.allowed)
+                .map(sub => ({
+                  groupId: id,
+                  subModuleId: sub.subModuleId,
+                  allowed: sub.allowed,
+                  groupModulePermissionId: modulePermission.id,
+                }));
+
+              if (subModuleData.length > 0) {
+                await tx.groupSubModulePermission.createMany({
+                  data: subModuleData,
+                });
+              }
+            }
+          }
         }
+      }
 
-        const hasUsers = await this.groupRepository.checkGroupHasUsers(groupId);
-        if (hasUsers) {
-            throw new AppError('Cannot delete group with active users', 400);
-        }
+      // Return updated group with permissions
+      return await this.groupRepository.findById(id);
+    });
+  }
 
-        await this.groupRepository.delete(groupId);
+  async deleteGroup(id: string) {
+
+    if(id == "6b9fd470-bc05-4465-9ed8-7f6f093d337c"){
+        throw new Error('Cannot delete default group');
+    }
+    // Check if group exists
+    const group = await this.groupRepository.findById(id);
+    if (!group) {
+      throw new Error('Group not found');
     }
 
-    async listGroups(filters: GroupFilters, page: number, limit: number) {
-        return this.groupRepository.findMany(filters, page, limit);
+    // Check if group has users
+    const hasUsers = await this.groupRepository.hasUsers(id);
+    if (hasUsers) {
+      throw new Error('Cannot delete group with assigned users');
     }
 
-    async getModules() {
-        return prisma.module.findMany({
-            include: {
-                subModules: true,
-            },
-            orderBy: { name: 'asc' },
-        });
+    // Delete group and its permissions (cascade delete)
+    return await prisma.$transaction(async (tx) => {
+      await tx.groupSubModulePermission.deleteMany({
+        where: { groupId: id },
+      });
+      await tx.groupModulePermission.deleteMany({
+        where: { groupId: id },
+      });
+      await tx.group.delete({
+        where: { id },
+      });
+    });
+  }
+
+  async getGroupById(id: string) {
+    // if(id == "6b9fd470-bc05-4465-9ed8-7f6f093d337c"){
+    //     throw new Error('Cannot get default group');
+    // }
+    
+    const group = await this.groupRepository.findById(id);
+    if (!group) {
+      throw new Error('Group not found');
     }
+    return this.transformGroupResponse(group);
+  }
+
+  async listGroups(filters: GroupFilters) {
+    const { groups, total } = await this.groupRepository.findMany(filters);
+    const { page = 1, limit = 10 } = filters;
+
+    return {
+      groups: groups.map(group => this.transformGroupResponse(group)),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getAllModules() {
+    return await this.groupRepository.getAllModules();
+  }
+
+  private transformGroupResponse(group: any) {
+    return {
+      id: group.id,
+      name: group.name,
+      description: group.description,
+      createdAt: group.createdAt,
+      createdBy: group.createdBy,
+      updatedAt: group.updatedAt,
+      updatedBy: group.updatedBy,
+      _count: group._count,
+      permissions: group.permissions?.map((permission: any) => ({
+        moduleId: permission.moduleId,
+        hasAccess: permission.hasAccess,
+        module: permission.module,
+        subModulePermissions: permission.subModulePermissions?.map((subPerm: any) => ({
+          subModule: subPerm.subModule,
+          allowed: subPerm.allowed,
+        })),
+      })),
+    };
+  }
 }
