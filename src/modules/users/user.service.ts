@@ -43,6 +43,8 @@ export class UserService {
       accountType,
     });
 
+
+
     // Generate tokens
     const accessToken = signJwt({
       sub: user.userId,
@@ -64,7 +66,7 @@ export class UserService {
     // Find user
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      throw new AppError('Invalid credentials', 401);
+      throw new AppError('Invalid credentials', 404);
     }
 
     // Check password
