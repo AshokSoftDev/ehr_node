@@ -31,6 +31,10 @@ model Doctor {
     deletedAt DateTime?
     deletedBy String?
 
+    // Relations
+    patientInfos PatientInfo[]
+    appointments Appointment[]
+
     @@index([email])
     @@index([licenceNo])
     @@index([specialty])

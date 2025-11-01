@@ -22,4 +22,81 @@ model Patient {
   createdBy    String
   updatedAt    DateTime @updatedAt
   updatedBy    String
+
+  // Relations
+  infos        PatientInfo[]
+  emergencies  PatientEmergency[]
+  allergies    PatientAllergy[]
+  appointments Appointment[]
+}
+
+model PatientInfo {
+  pi_id           Int       @id @default(autoincrement())
+  patient_id      Int
+  bloodGroup      String
+  overseas        Boolean
+  passportNumber  String?
+  validityDate    DateTime?
+  occupation      String?
+  department      String?
+  companyName     String?
+  designation     String?
+  employeeCode    String?
+  primaryDoctorId String?
+
+  activeStatus Int       @default(1)
+  createdAt    DateTime  @default(now())
+  createdBy    String
+  updatedAt    DateTime  @updatedAt
+  updatedBy    String
+
+  patient       Patient   @relation(fields: [patient_id], references: [patient_id])
+  primaryDoctor Doctor?   @relation(fields: [primaryDoctorId], references: [id])
+
+  @@index([patient_id])
+  @@index([primaryDoctorId])
+}
+
+model PatientEmergency {
+  pe_id         Int       @id @default(autoincrement())
+  patient_id    Int
+  name          String
+  relation      String
+  contactNumber String
+  status        Int       @default(1) // 1=active, 0=inactive
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  patient Patient @relation(fields: [patient_id], references: [patient_id])
+
+  @@index([patient_id])
+}
+
+model PatientAllergy {
+  pa_id       Int       @id @default(autoincrement())
+  patient_id  Int
+  allergyId   Int?
+  allergyName String
+
+  // Status & Audit
+  status    Int       @default(1)
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  patient Patient @relation(fields: [patient_id], references: [patient_id])
+  allergy Allergy? @relation(fields: [allergyId], references: [allergy_id])
+
+  @@index([patient_id])
+  @@index([allergyId])
+  @@index([status])
 }
