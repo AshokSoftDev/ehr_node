@@ -1,0 +1,24 @@
+model Visit {
+  visit_id         Int      @id @default(autoincrement())
+  appointment_id   Int
+  visit_date       DateTime
+  location_id      Int?
+  doctor_id        String
+  visit_type       String
+  reason_for_visit String?
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  @@index([appointment_id])
+  @@index([location_id])
+  @@index([doctor_id])
+  @@index([visit_date])
+  @@index([status])
+}

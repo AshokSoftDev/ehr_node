@@ -1,0 +1,40 @@
+model Appointment {
+  appointment_id     Int      @id @default(autoincrement())
+  patient_id         Int
+  doctor_id          String
+  appointment_date   DateTime
+  start_time         DateTime
+  end_time           DateTime
+  duration           Int?
+  appointment_type   String
+  reason_for_visit   String?
+  appointment_status String
+  notes              String?
+  // Snapshot fields (denormalized for reporting/search)
+  patient_mrn        String
+  patient_title      String
+  patient_firstName  String
+  patient_lastName   String
+  doctor_title       String
+  doctor_firstName   String
+  doctor_lastName    String
+  doctor_specialty   String
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive / cancelled
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  patient Patient @relation(fields: [patient_id], references: [patient_id])
+  doctor  Doctor  @relation(fields: [doctor_id], references: [id])
+
+  @@index([patient_id])
+  @@index([doctor_id])
+  @@index([appointment_date])
+  @@index([status])
+}

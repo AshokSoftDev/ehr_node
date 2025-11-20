@@ -22,4 +22,34 @@ model Patient {
   createdBy    String
   updatedAt    DateTime @updatedAt
   updatedBy    String
+
+  // Relations
+  appointments     Appointment[]
+  patientAllergies PatientAllergy[]
+}
+
+model PatientAllergy {
+  id         Int      @id @default(autoincrement())
+  patient_id Int
+  allergy_id Int
+  notes      String?
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  patient Patient @relation(fields: [patient_id], references: [patient_id])
+  allergy Allergy @relation(fields: [allergy_id], references: [allergy_id])
+
+  @@index([patient_id])
+  @@index([allergy_id])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
 }

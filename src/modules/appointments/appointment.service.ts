@@ -37,7 +37,37 @@ export class AppointmentService {
       doctor_specialty: doctor.specialty,
     };
 
-    return this.repo.create({ ...dto, ...snap, createdBy: userId, updatedBy: userId });
+    const appointment = await this.repo.create({
+      ...dto,
+      ...snap,
+      createdBy: userId,
+      updatedBy: userId,
+    });
+
+    // Create a corresponding Visit record for this appointment.
+    // Uses appointment_date as visit_date and mirrors key fields.
+    try {
+      await (prisma as any).visit.create({
+        data: {
+          appointment_id: appointment.appointment_id,
+          visit_date: appointment.appointment_date,
+          location_id: null,
+          doctor_id: appointment.doctor_id,
+          visit_type: appointment.appointment_type,
+          reason_for_visit: appointment.reason_for_visit,
+          status: 1,
+          createdBy: userId,
+          updatedBy: userId,
+        },
+      });
+    } catch (error) {
+      // Swallow visit creation errors to avoid breaking appointment creation.
+      // Log to console for debugging; can be replaced with structured logging.
+      // eslint-disable-next-line no-console
+      console.error('Failed to create Visit for appointment', error);
+    }
+
+    return appointment;
   }
 
   async update(id: number, dto: UpdateAppointmentDto, userId?: string) {

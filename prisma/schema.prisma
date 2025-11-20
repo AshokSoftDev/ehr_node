@@ -11,6 +11,48 @@ datasource db {
 }
 
 
+model Appointment {
+  appointment_id     Int      @id @default(autoincrement())
+  patient_id         Int
+  doctor_id          String
+  appointment_date   DateTime
+  start_time         DateTime
+  end_time           DateTime
+  duration           Int?
+  appointment_type   String
+  reason_for_visit   String?
+  appointment_status String
+  notes              String?
+  // Snapshot fields (denormalized for reporting/search)
+  patient_mrn        String
+  patient_title      String
+  patient_firstName  String
+  patient_lastName   String
+  doctor_title       String
+  doctor_firstName   String
+  doctor_lastName    String
+  doctor_specialty   String
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive / cancelled
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  patient Patient @relation(fields: [patient_id], references: [patient_id])
+  doctor  Doctor  @relation(fields: [doctor_id], references: [id])
+
+  @@index([patient_id])
+  @@index([doctor_id])
+  @@index([appointment_date])
+  @@index([status])
+}
+
+
 model Doctor {
     id           String   @id @default(uuid())
     title        String
@@ -44,12 +86,85 @@ model Doctor {
     deletedAt DateTime?
     deletedBy String?
 
+    // Relations
+    appointments Appointment[]
+
     @@index([email])
     @@index([licenceNo])
     @@index([specialty])
     @@index([status])
     @@index([createdAt])
     @@index([deletedAt])
+}
+
+
+// Master data models: Insurance, Allergy
+
+model Insurance {
+  i_id           Int       @id @default(autoincrement())
+  type           String
+  company        String
+  policy         String
+  policyNo       String
+  validationFrom DateTime
+  validationTo   DateTime
+  notes          String?
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+model Allergy {
+  allergy_id  Int      @id @default(autoincrement())
+  allergyName String
+  allergyType String
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  patientAllergies PatientAllergy[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+model Location {
+  location_id   Int     @id @default(autoincrement())
+  location_name String
+  address       String?
+  city          String
+  state         String
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
 }
 
 
@@ -77,6 +192,36 @@ model Patient {
   createdBy    String
   updatedAt    DateTime @updatedAt
   updatedBy    String
+
+  // Relations
+  appointments     Appointment[]
+  patientAllergies PatientAllergy[]
+}
+
+model PatientAllergy {
+  id         Int      @id @default(autoincrement())
+  patient_id Int
+  allergy_id Int
+  notes      String?
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  patient Patient @relation(fields: [patient_id], references: [patient_id])
+  allergy Allergy @relation(fields: [allergy_id], references: [allergy_id])
+
+  @@index([patient_id])
+  @@index([allergy_id])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
 }
 
 
@@ -195,4 +340,30 @@ model GroupSubModulePermission {
     @@unique([groupId, subModuleId])
     @@index([groupId])
     @@index([subModuleId])
+}
+
+
+model Visit {
+  visit_id         Int      @id @default(autoincrement())
+  appointment_id   Int
+  visit_date       DateTime
+  location_id      Int?
+  doctor_id        String
+  visit_type       String
+  reason_for_visit String?
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  @@index([appointment_id])
+  @@index([location_id])
+  @@index([doctor_id])
+  @@index([visit_date])
+  @@index([status])
 }

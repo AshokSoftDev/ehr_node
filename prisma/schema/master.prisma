@@ -1,0 +1,68 @@
+// Master data models: Insurance, Allergy
+
+model Insurance {
+  i_id           Int       @id @default(autoincrement())
+  type           String
+  company        String
+  policy         String
+  policyNo       String
+  validationFrom DateTime
+  validationTo   DateTime
+  notes          String?
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+model Allergy {
+  allergy_id  Int      @id @default(autoincrement())
+  allergyName String
+  allergyType String
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  patientAllergies PatientAllergy[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+model Location {
+  location_id   Int     @id @default(autoincrement())
+  location_name String
+  address       String?
+  city          String
+  state         String
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
