@@ -60,6 +60,9 @@ export class UserRepository {
     if (filters.userStatus !== undefined) where.userStatus = filters.userStatus;
     if (filters.accountType) where.accountType = filters.accountType;
     if (filters.parentId) where.parentId = filters.parentId;
+    if (filters.excludeRoot) {
+      where.parentId = { not: null };
+    }
     if (filters.search) {
       where.OR = [
         { email: { contains: filters.search, mode: 'insensitive' } },

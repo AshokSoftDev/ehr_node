@@ -7,9 +7,9 @@ export interface CreateLocationDto {
 
 export type UpdateLocationDto = Partial<CreateLocationDto> & {
   status?: number;
+  active?: boolean;
 };
 
 export interface LocationFilters {
   search?: string;
 }
-

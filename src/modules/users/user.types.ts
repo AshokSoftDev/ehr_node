@@ -42,4 +42,5 @@ export interface UserFilters {
     accountType?: string;
     parentId?: string;
     search?: string;
+    excludeRoot?: boolean;
 }

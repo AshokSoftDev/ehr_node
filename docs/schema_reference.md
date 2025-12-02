@@ -21,7 +21,8 @@ Located in `prisma/schema/*.prisma` merged to `prisma/schema.prisma`.
 ## Master
 - `Insurance(i_id, type, company, policy, policyNo, validationFrom, validationTo, notes?, status, created/updated/deleted audit)`
 - `Allergy(allergy_id, allergyName, allergyType, status, created/updated/deleted audit)`
-- `Location(location_id, location_name, address?, city, state, status, created/updated/deleted audit)`
+- `Location(location_id, location_name, address?, city, state, status, active, created/updated/deleted audit)`
+- `Drug(drug_id, drug_generic, drug_name, drug_type, drug_dosage, drug_measure, instruction?, status, created/updated/deleted audit)`
 
 ## Visits
 - `Visit(visit_id, appointment_id, visit_date, location_id?, doctor_id, visit_type, reason_for_visit?, status, created/updated/deleted audit)`

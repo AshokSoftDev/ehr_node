@@ -14,7 +14,7 @@ export class LocationRepository {
   async findAll(filters: LocationFilters = {}): Promise<Location[]> {
     const { search } = filters;
     const where: Prisma.LocationWhereInput = {
-      status: 1,
+      status: 1, // return non-deleted locations (active can be true/false)
       ...(search && {
         OR: [
           { location_name: { contains: search, mode: 'insensitive' } },
@@ -34,8 +34,7 @@ export class LocationRepository {
   async softDelete(id: number, deletedBy: string): Promise<Location> {
     return prisma.location.update({
       where: { location_id: id },
-      data: { status: 0, deletedAt: new Date(), deletedBy },
+      data: { status: 0, active: false, deletedAt: new Date(), deletedBy },
     });
   }
 }
-

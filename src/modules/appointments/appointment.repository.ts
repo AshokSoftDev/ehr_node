@@ -94,6 +94,42 @@ export class AppointmentRepository {
     };
   }
 
+  async listCheckedOut(filters: { patient_id?: number; dateFrom?: Date; dateTo?: Date; page?: number; limit?: number } = {}) {
+    const { patient_id, dateFrom, dateTo, page = 1, limit = 10 } = filters;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.AppointmentWhereInput = {
+      status: 1,
+      appointment_status: { equals: 'CHECKED-OUT', mode: 'insensitive' },
+      ...(patient_id ? { patient_id } : {}),
+      ...(dateFrom || dateTo
+        ? {
+            appointment_date: {
+              gte: dateFrom ?? undefined,
+              lte: dateTo ?? undefined,
+            },
+          }
+        : {}),
+    };
+
+    const [appointments, total] = await Promise.all([
+      prisma.appointment.findMany({
+        where,
+        orderBy: { appointment_date: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.appointment.count({ where }),
+    ]);
+
+    return {
+      appointments,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
   async create(data: CreateAppointmentDto & AppointmentSnapshot & { createdBy?: string; updatedBy?: string }): Promise<Appointment> {
     return prisma.appointment.create({ data });
   }

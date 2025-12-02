@@ -52,6 +52,32 @@ model Location {
   address       String?
   city          String
   state         String
+  clinicalNotes ClinicalNotes[]
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  @@index([status])
+  @@index([active])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+model Drug {
+  drug_id      Int     @id @default(autoincrement())
+  drug_generic String
+  drug_name    String
+  drug_type    String
+  drug_dosage  String
+  drug_measure String
+  instruction  String?
 
   // Status & Audit
   status    Int       @default(1) // 1=active, 0=inactive

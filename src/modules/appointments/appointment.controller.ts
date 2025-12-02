@@ -3,6 +3,7 @@ import { catchAsync } from '../../utils/errors';
 import { AuthRequest } from '../../types/express';
 import { AppointmentService } from './appointment.service';
 import { AppointmentFilters, CreateAppointmentDto, UpdateAppointmentDto } from './appointment.types';
+import { listCheckedOutAppointmentsSchema } from './appointment.schema';
 
 export class AppointmentController {
   private service = new AppointmentService();
@@ -31,6 +32,19 @@ export class AppointmentController {
       limit: q.limit ? Number(q.limit) : 10,
     };
     const data = await this.service.list(filters);
+    res.status(200).json({ status: 'success', data });
+  });
+
+  listCheckedOut = catchAsync(async (req: AuthRequest, res: Response) => {
+    const q = req.query as any;
+    const filters = {
+      patient_id: q.patient_id ? Number(q.patient_id) : undefined,
+      dateFrom: q.dateFrom ? new Date(String(q.dateFrom)) : undefined,
+      dateTo: q.dateTo ? new Date(String(q.dateTo)) : undefined,
+      page: q.page ? Number(q.page) : 1,
+      limit: q.limit ? Number(q.limit) : 10,
+    };
+    const data = await this.service.listCheckedOut(filters);
     res.status(200).json({ status: 'success', data });
   });
 

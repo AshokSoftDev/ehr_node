@@ -67,7 +67,10 @@ export class GroupRepository {
     //       },
     // };
 
-    const where: Prisma.GroupWhereInput = { };
+    const ROOT_GROUP_ID = '01c00067-801a-4464-8c19-a5f7047dc5ac';
+    const where: Prisma.GroupWhereInput = {
+      id: { not: ROOT_GROUP_ID },
+    };
 
     if (search) {
       where.OR = [

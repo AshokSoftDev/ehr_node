@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { UserController } from './user.controller';
-import { authenticate } from '../../middleware/auth.middleware';
+import { authenticate, requireModule } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validate.middleware';
 import {
     createUserSchema,
@@ -19,7 +19,7 @@ router.post('/register', validate(createUserSchema), userController.register);
 router.post('/login', validate(loginSchema), userController.login);
 
 // Protected routes
-router.use(authenticate); // All routes below require authentication
+router.use(authenticate, requireModule('User Management')); // All routes below require authentication + module permission
 
 router.post('/create', validate(createUserSchema), userController.registerWithAuth);
 router.get('/', userController.listUsers);

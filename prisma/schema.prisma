@@ -45,6 +45,8 @@ model Appointment {
   // Relations
   patient Patient @relation(fields: [patient_id], references: [patient_id])
   doctor  Doctor  @relation(fields: [doctor_id], references: [id])
+  visits  Visit[]
+  clinicalNotes ClinicalNotes[]
 
   @@index([patient_id])
   @@index([doctor_id])
@@ -88,6 +90,9 @@ model Doctor {
 
     // Relations
     appointments Appointment[]
+    visits       Visit[]
+    patientInfo  PatientInfo[]
+    clinicalNotes ClinicalNotes[]
 
     @@index([email])
     @@index([licenceNo])
@@ -152,6 +157,32 @@ model Location {
   address       String?
   city          String
   state         String
+  clinicalNotes ClinicalNotes[]
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  @@index([status])
+  @@index([active])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+model Drug {
+  drug_id      Int     @id @default(autoincrement())
+  drug_generic String
+  drug_name    String
+  drug_type    String
+  drug_dosage  String
+  drug_measure String
+  instruction  String?
 
   // Status & Audit
   status    Int       @default(1) // 1=active, 0=inactive
@@ -195,13 +226,18 @@ model Patient {
 
   // Relations
   appointments     Appointment[]
+  visits           Visit[]
   patientAllergies PatientAllergy[]
+  patientInfo      PatientInfo?
+  patientEmergency PatientEmergency[]
+  clinicalNotes    ClinicalNotes[]
 }
 
 model PatientAllergy {
   id         Int      @id @default(autoincrement())
   patient_id Int
-  allergy_id Int
+  allergy_id Int?
+  allergyName String
   notes      String?
 
   // Status & Audit
@@ -215,10 +251,61 @@ model PatientAllergy {
 
   // Relations
   patient Patient @relation(fields: [patient_id], references: [patient_id])
-  allergy Allergy @relation(fields: [allergy_id], references: [allergy_id])
+  allergy Allergy? @relation(fields: [allergy_id], references: [allergy_id])
 
   @@index([patient_id])
   @@index([allergy_id])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+model PatientInfo {
+  pi_id           Int      @id @default(autoincrement())
+  patient_id      Int      @unique
+  bloodGroup      String
+  overseas        Boolean
+  passportNumber  String?
+  validityDate    DateTime?
+  occupation      String?
+  department      String?
+  companyName     String?
+  designation     String?
+  employeeCode    String?
+  primaryDoctorId String?
+  activeStatus    Int      @default(1)
+  createdAt       DateTime @default(now())
+  createdBy       String?
+  updatedAt       DateTime @updatedAt
+  updatedBy       String?
+  deletedAt       DateTime?
+  deletedBy       String?
+
+  patient Patient @relation(fields: [patient_id], references: [patient_id])
+  doctor  Doctor? @relation(fields: [primaryDoctorId], references: [id])
+
+  @@index([patient_id])
+  @@index([primaryDoctorId])
+  @@index([activeStatus])
+}
+
+model PatientEmergency {
+  pe_id          Int      @id @default(autoincrement())
+  patient_id     Int
+  name           String
+  relation       String
+  contactNumber  String
+  status         Int      @default(1)
+  createdAt      DateTime @default(now())
+  createdBy      String?
+  updatedAt      DateTime @updatedAt
+  updatedBy      String?
+  deletedAt      DateTime?
+  deletedBy      String?
+
+  patient Patient @relation(fields: [patient_id], references: [patient_id])
+
+  @@index([patient_id])
   @@index([status])
   @@index([createdAt])
   @@index([deletedAt])
@@ -345,7 +432,8 @@ model GroupSubModulePermission {
 
 model Visit {
   visit_id         Int      @id @default(autoincrement())
-  appointment_id   Int
+  appointment_id   Int?
+  patient_id       Int
   visit_date       DateTime
   location_id      Int?
   doctor_id        String
@@ -361,9 +449,53 @@ model Visit {
   deletedAt DateTime?
   deletedBy String?
 
+  // Relations
+  appointment Appointment? @relation(fields: [appointment_id], references: [appointment_id])
+  patient     Patient     @relation(fields: [patient_id], references: [patient_id])
+  doctor      Doctor      @relation(fields: [doctor_id], references: [id])
+  clinicalNotes ClinicalNotes[]
+
   @@index([appointment_id])
+  @@index([patient_id])
   @@index([location_id])
   @@index([doctor_id])
   @@index([visit_date])
+  @@index([status])
+}
+
+model ClinicalNotes {
+  cn_id          Int      @id @default(autoincrement())
+  patient_id     Int
+  appointment_id Int?
+  visit_id       Int
+  location_id    Int?
+  doctor_id      String
+  notes_type     String   @default("text") // 'text' | 'audio'
+  editor_notes   String?
+  transcription  String?
+  audio_url      String?
+  retry_count    Int      @default(0)
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  patient     Patient      @relation(fields: [patient_id], references: [patient_id])
+  appointment Appointment? @relation(fields: [appointment_id], references: [appointment_id])
+  visit       Visit        @relation(fields: [visit_id], references: [visit_id])
+  location    Location?    @relation(fields: [location_id], references: [location_id])
+  doctor      Doctor       @relation(fields: [doctor_id], references: [id])
+
+  @@index([patient_id])
+  @@index([appointment_id])
+  @@index([visit_id])
+  @@index([doctor_id])
+  @@index([location_id])
   @@index([status])
 }

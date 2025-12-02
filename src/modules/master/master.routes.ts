@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { validate } from '../../middleware/validate.middleware';
-import { authenticate } from '../../middleware/auth.middleware';
+import { authenticate, requireModule } from '../../middleware/auth.middleware';
 
 import { InsuranceController } from './insurance/insurance.controller';
 import {
@@ -17,6 +17,13 @@ import {
   updateAllergySchema,
   deleteAllergySchema,
 } from './allergy/allergy.schema';
+import { DrugController } from './drug/drug.controller';
+import {
+  listDrugSchema,
+  createDrugSchema,
+  updateDrugSchema,
+  deleteDrugSchema,
+} from './drug/drug.schema';
 import { LocationController } from './location/location.controller';
 import {
   listLocationSchema,
@@ -28,6 +35,7 @@ import {
 const router = Router();
 
 // Authenticate all master routes
+// router.use(authenticate, requireModule('Location Master'));
 router.use(authenticate);
 
 // Insurance routes
@@ -44,6 +52,13 @@ router.post('/allergy', validate(createAllergySchema), allergyController.create)
 router.put('/allergy/:id', validate(updateAllergySchema), allergyController.update);
 router.delete('/allergy/:id', validate(deleteAllergySchema), allergyController.remove);
 
+// Drug routes
+const drugController = new DrugController();
+router.get('/drug', validate(listDrugSchema), drugController.list);
+router.post('/drug', validate(createDrugSchema), drugController.create);
+router.put('/drug/:id', validate(updateDrugSchema), drugController.update);
+router.delete('/drug/:id', validate(deleteDrugSchema), drugController.remove);
+
 // Location routes
 const locationController = new LocationController();
 router.get('/location', validate(listLocationSchema), locationController.list);
@@ -52,4 +67,3 @@ router.put('/location/:id', validate(updateLocationSchema), locationController.u
 router.delete('/location/:id', validate(deleteLocationSchema), locationController.remove);
 
 export default router;
-

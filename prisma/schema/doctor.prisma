@@ -33,6 +33,9 @@ model Doctor {
 
     // Relations
     appointments Appointment[]
+    visits       Visit[]
+    patientInfo  PatientInfo[]
+    clinicalNotes ClinicalNotes[]
 
     @@index([email])
     @@index([licenceNo])

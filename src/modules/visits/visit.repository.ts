@@ -19,72 +19,81 @@ export class VisitRepository {
 
     const normalizedDoctor = typeof doctor === 'string' ? doctor.trim() : undefined;
     const ignoreDoctor = !normalizedDoctor || normalizedDoctor.toLowerCase() === 'none';
+    const normalizedStatus = typeof status === 'string' && status !== '' ? Number(status) : undefined;
+    const statusFilter = Number.isFinite(normalizedStatus) ? normalizedStatus : undefined;
 
-    const where: Prisma.AppointmentWhereInput = {
-      status: 1, // active (not soft-deleted)
+    const where: any = {
+      ...(statusFilter !== undefined ? { status: statusFilter } : { status: 1 }),
       ...(dateFrom || dateTo
         ? {
-            appointment_date: {
-              gte: dateFrom ?? undefined,
-              lte: dateTo ?? undefined,
-            },
-          }
+          visit_date: {
+            gte: dateFrom ?? undefined,
+            lte: dateTo ?? undefined,
+          },
+        }
         : {}),
       ...(reason
         ? { reason_for_visit: { contains: reason, mode: 'insensitive' } }
-        : {}),
-      ...(status
-        ? { appointment_status: { contains: status, mode: 'insensitive' } }
         : {}),
       patient: {
         activeStatus: 1,
         ...(patient
           ? {
-              OR: [
-                { mrn: { contains: patient, mode: 'insensitive' } },
-                { firstName: { contains: patient, mode: 'insensitive' } },
-                { lastName: { contains: patient, mode: 'insensitive' } },
-              ],
-            }
+            OR: [
+              { mrn: { contains: patient, mode: 'insensitive' } },
+              { firstName: { contains: patient, mode: 'insensitive' } },
+              { lastName: { contains: patient, mode: 'insensitive' } },
+            ],
+          }
           : {}),
       },
       ...(!ignoreDoctor
         ? {
-            doctor: {
-              OR: [
-                { displayName: { contains: normalizedDoctor, mode: 'insensitive' } },
-                { firstName: { contains: normalizedDoctor, mode: 'insensitive' } },
-                { lastName: { contains: normalizedDoctor, mode: 'insensitive' } },
-                { specialty: { contains: normalizedDoctor, mode: 'insensitive' } },
-              ],
-            },
-          }
+          doctor: {
+            OR: [
+              { displayName: { contains: normalizedDoctor, mode: 'insensitive' } },
+              { firstName: { contains: normalizedDoctor, mode: 'insensitive' } },
+              { lastName: { contains: normalizedDoctor, mode: 'insensitive' } },
+              { specialty: { contains: normalizedDoctor, mode: 'insensitive' } },
+            ],
+          },
+        }
         : {}),
     };
 
-    const [visits, total] = await Promise.all([
-      prisma.appointment.findMany({
-        where,
-        include: {
-          patient: {
-            select: {
-              patient_id: true,
-              mrn: true,
-              title: true,
-              firstName: true,
-              lastName: true,
-              gender: true,
-              age: true,
-              mobileNumber: true,
-            },
-          },
-          doctor: { select: { id: true, displayName: true, specialty: true } },
+    const include: any = {
+      patient: {
+        select: {
+          patient_id: true,
+          mrn: true,
+          title: true,
+          firstName: true,
+          lastName: true,
+          gender: true,
+          age: true,
+          mobileNumber: true,
         },
-        orderBy: { appointment_date: 'desc' },
+      },
+      doctor: { select: { id: true, displayName: true, specialty: true } },
+      appointment: {
+        select: {
+          appointment_id: true,
+          appointment_type: true,
+        },
+      },
+    };
+
+    const client = prisma as any;
+
+    const [visits, total] = await Promise.all([
+      client.visit.findMany({
+        where,
+        include,
+        orderBy: { visit_date: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.appointment.count({ where }),
+      client.visit.count({ where }),
     ]);
 
     return {

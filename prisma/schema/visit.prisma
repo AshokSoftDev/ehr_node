@@ -1,6 +1,7 @@
 model Visit {
   visit_id         Int      @id @default(autoincrement())
-  appointment_id   Int
+  appointment_id   Int?
+  patient_id       Int
   visit_date       DateTime
   location_id      Int?
   doctor_id        String
@@ -16,9 +17,53 @@ model Visit {
   deletedAt DateTime?
   deletedBy String?
 
+  // Relations
+  appointment Appointment? @relation(fields: [appointment_id], references: [appointment_id])
+  patient     Patient     @relation(fields: [patient_id], references: [patient_id])
+  doctor      Doctor      @relation(fields: [doctor_id], references: [id])
+  clinicalNotes ClinicalNotes[]
+
   @@index([appointment_id])
+  @@index([patient_id])
   @@index([location_id])
   @@index([doctor_id])
   @@index([visit_date])
+  @@index([status])
+}
+
+model ClinicalNotes {
+  cn_id          Int      @id @default(autoincrement())
+  patient_id     Int
+  appointment_id Int?
+  visit_id       Int
+  location_id    Int?
+  doctor_id      String
+  notes_type     String   @default("text") // 'text' | 'audio'
+  editor_notes   String?
+  transcription  String?
+  audio_url      String?
+  retry_count    Int      @default(0)
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  patient     Patient      @relation(fields: [patient_id], references: [patient_id])
+  appointment Appointment? @relation(fields: [appointment_id], references: [appointment_id])
+  visit       Visit        @relation(fields: [visit_id], references: [visit_id])
+  location    Location?    @relation(fields: [location_id], references: [location_id])
+  doctor      Doctor       @relation(fields: [doctor_id], references: [id])
+
+  @@index([patient_id])
+  @@index([appointment_id])
+  @@index([visit_id])
+  @@index([doctor_id])
+  @@index([location_id])
   @@index([status])
 }

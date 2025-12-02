@@ -18,6 +18,10 @@ export class AppointmentService {
     return this.repo.list(filters);
   }
 
+  listCheckedOut(filters: { patient_id?: number; dateFrom?: Date; dateTo?: Date; page?: number; limit?: number }) {
+    return this.repo.listCheckedOut(filters);
+  }
+
   async create(dto: CreateAppointmentDto, userId?: string) {
     // Validate patient & doctor exist
     const [patient, doctor] = await Promise.all([
@@ -37,8 +41,11 @@ export class AppointmentService {
       doctor_specialty: doctor.specialty,
     };
 
+    const statusUpper = dto.appointment_status?.toUpperCase();
+
     const appointment = await this.repo.create({
       ...dto,
+      appointment_status: statusUpper,
       ...snap,
       createdBy: userId,
       updatedBy: userId,
@@ -50,6 +57,7 @@ export class AppointmentService {
       await (prisma as any).visit.create({
         data: {
           appointment_id: appointment.appointment_id,
+          patient_id: appointment.patient_id,
           visit_date: appointment.appointment_date,
           location_id: null,
           doctor_id: appointment.doctor_id,
@@ -82,6 +90,8 @@ export class AppointmentService {
     if (!patient || patient.activeStatus !== 1) throw new AppError('Patient not found', 404);
     if (!doctor || (doctor as any).status === 0) throw new AppError('Doctor not found', 404);
 
+    const nextStatus = dto.appointment_status ? dto.appointment_status.toUpperCase() : undefined;
+
     const snap: AppointmentSnapshot = {
       patient_mrn: patient.mrn,
       patient_title: patient.title,
@@ -93,7 +103,43 @@ export class AppointmentService {
       doctor_specialty: doctor.specialty,
     };
 
-    return this.repo.update(id, { ...dto, ...snap, updatedBy: userId });
+    const updated = await this.repo.update(id, {
+      ...dto,
+      appointment_status: nextStatus ?? exists.appointment_status,
+      ...snap,
+      updatedBy: userId,
+    });
+
+    // If moved to WITH DOCTOR, ensure a Visit exists for this appointment.
+    if (nextStatus === 'WITH DOCTOR') {
+      const client = prisma as any;
+      const visitExists = await client.visit.findFirst({
+        where: { appointment_id: id },
+      });
+      if (!visitExists) {
+        try {
+          await client.visit.create({
+            data: {
+              appointment_id: id,
+              patient_id: updated.patient_id,
+              visit_date: updated.appointment_date,
+              location_id: null,
+              doctor_id: updated.doctor_id,
+              visit_type: updated.appointment_type,
+              reason_for_visit: updated.reason_for_visit,
+              status: 1,
+              createdBy: userId,
+              updatedBy: userId,
+            },
+          });
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('Failed to create Visit on status change', error);
+        }
+      }
+    }
+
+    return updated;
   }
 
   async remove(id: number, userId?: string) {

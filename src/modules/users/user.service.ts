@@ -181,6 +181,11 @@ export class UserService {
   private applyAccessFilters(filters: UserFilters, currentUser: any): UserFilters {
     const appliedFilters = { ...filters };
 
+    // Exclude root-level accounts (parentId null) for non-root users
+    if (currentUser?.parentId !== null) {
+      appliedFilters.excludeRoot = true;
+    }
+
     if (currentUser.accountType === 'parent') {
       // Parent sees only their children and themselves
       appliedFilters.parentId = currentUser.userId;

@@ -20,11 +20,13 @@ export const updateLocationSchema = z.object({
     id: z.string().regex(/^\d+$/).transform(Number),
   }),
   body: z.object({
+    location_id: z.number().int().optional(),
     location_name: z.string().min(1).optional(),
     address: z.string().optional(),
     city: z.string().min(1).optional(),
     state: z.string().min(1).optional(),
     status: z.number().int().min(0).max(1).optional(),
+    active: z.boolean().optional(),
   }),
 });
 
@@ -33,4 +35,3 @@ export const deleteLocationSchema = z.object({
     id: z.string().regex(/^\d+$/).transform(Number),
   }),
 });
-

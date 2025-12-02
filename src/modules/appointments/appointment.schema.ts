@@ -1,5 +1,22 @@
 import { z } from 'zod';
 
+const APPOINTMENT_STATUSES = [
+  'SCHEDULED',
+  'CONFIRMED',
+  'CHECKED-IN',
+  'CHECKED-OUT',
+  'NO-SHOW',
+  'WITH DOCTOR',
+  'WAIT LIST',
+  'CANCELLED',
+] as const;
+
+const statusField = z
+  .string()
+  .min(1)
+  .transform((v) => v.toUpperCase())
+  .pipe(z.enum(APPOINTMENT_STATUSES));
+
 const toDate = (v: unknown) => {
   if (v == null || v === '') return undefined;
   if (v instanceof Date) return v;
@@ -13,6 +30,16 @@ export const listAppointmentsSchema = z.object({
     mrn: z.string().optional(),
     patientName: z.string().optional(),
     doctorName: z.string().optional(),
+    dateFrom: z.preprocess(toDate, z.date().optional()),
+    dateTo: z.preprocess(toDate, z.date().optional()),
+    page: z.string().regex(/^\d+$/).transform(Number).optional(),
+    limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+  }),
+});
+
+export const listCheckedOutAppointmentsSchema = z.object({
+  query: z.object({
+    patient_id: z.string().regex(/^\d+$/).transform(Number).optional(),
     dateFrom: z.preprocess(toDate, z.date().optional()),
     dateTo: z.preprocess(toDate, z.date().optional()),
     page: z.string().regex(/^\d+$/).transform(Number).optional(),
@@ -38,7 +65,7 @@ export const createAppointmentSchema = z.object({
     duration: z.number().int().positive().optional(),
     appointment_type: z.string().min(1),
     reason_for_visit: z.string().optional(),
-    appointment_status: z.string().min(1),
+    appointment_status: statusField,
     notes: z.string().optional(),
   }).refine((data) => data.end_time > data.start_time, {
     message: 'end_time must be after start_time',
@@ -59,7 +86,7 @@ export const updateAppointmentSchema = z.object({
     duration: z.number().int().positive().optional(),
     appointment_type: z.string().min(1).optional(),
     reason_for_visit: z.string().optional(),
-    appointment_status: z.string().min(1).optional(),
+    appointment_status: statusField.optional(),
     notes: z.string().optional(),
   }).refine((data) => {
     if (!data.start_time || !data.end_time) return true;

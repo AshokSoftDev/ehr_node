@@ -29,3 +29,10 @@
 - DELETE `/:id` – soft delete (`status` → 0, sets `deletedAt/By`): `{ status, message, data: Location }`
 - Files: `src/modules/master/location/*`, router: `src/modules/master/master.routes.ts`
 
+## Master: Drug
+- Base: `/api/v1/master/drug` (auth required)
+- GET `/` – list with optional `search` (matches `drug_generic` or `drug_name`, case-insensitive): `{ status, data: Drug[] }`
+- POST `/` – create: `{ status, data: Drug }`
+- PUT `/:id` – update: `{ status, data: Drug }`
+- DELETE `/:id` – soft delete (`status` → 0, sets `deletedAt/By`): `{ status, message, data: Drug }`
+- Files: `src/modules/master/drug/*`, router: `src/modules/master/master.routes.ts`

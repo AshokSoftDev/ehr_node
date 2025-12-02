@@ -28,6 +28,9 @@
 - Prisma schema pieces under `prisma/schema/*.prisma` merged by `scripts/merge-prisma-schemas.js` into `prisma/schema.prisma`.
 - Generate client: `npm run prisma:generate`
 - Migrate dev DB: `npm run prisma:migrate`
+- After creating or changing Prisma schema, run `npm run prisma:generate` followed by `npm run prisma:migrate`.
+- Latest migrations have already been run manually; rerun only after new schema changes.
+- When adding new models/relations, ensure both sides of Prisma relations exist (back-reference fields) to avoid schema validation errors before generating/migrating.
 
 ## Key Paths
 - App entry: `src/app.ts`, `src/server.ts`
