@@ -18,10 +18,12 @@ model Visit {
   deletedBy String?
 
   // Relations
-  appointment Appointment? @relation(fields: [appointment_id], references: [appointment_id])
-  patient     Patient     @relation(fields: [patient_id], references: [patient_id])
-  doctor      Doctor      @relation(fields: [doctor_id], references: [id])
+  appointment   Appointment?    @relation(fields: [appointment_id], references: [appointment_id])
+  patient       Patient         @relation(fields: [patient_id], references: [patient_id])
+  doctor        Doctor?         @relation(fields: [doctor_id], references: [id])
   clinicalNotes ClinicalNotes[]
+  prescriptions Prescription[]
+  documents     VisitDocument[]
 
   @@index([appointment_id])
   @@index([patient_id])
@@ -31,18 +33,49 @@ model Visit {
   @@index([status])
 }
 
+model VisitDocument {
+  document_id      Int     @id @default(autoincrement())
+  visit_id         Int
+  patient_id       Int
+  document_type_id Int
+  file_name        String // Original filename
+  file_path        String // Relative path on disk
+  description      String?
+  mime_type        String // "application/pdf", "image/jpeg"
+  file_size        Int // bytes
+
+  // Status & Audit
+  status    Int       @default(1)
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  visit        Visit        @relation(fields: [visit_id], references: [visit_id])
+  patient      Patient      @relation(fields: [patient_id], references: [patient_id])
+  documentType DocumentType @relation(fields: [document_type_id], references: [document_type_id])
+
+  @@index([visit_id])
+  @@index([patient_id])
+  @@index([document_type_id])
+  @@index([status])
+}
+
 model ClinicalNotes {
-  cn_id          Int      @id @default(autoincrement())
+  cn_id          Int     @id @default(autoincrement())
   patient_id     Int
   appointment_id Int?
   visit_id       Int
   location_id    Int?
   doctor_id      String
-  notes_type     String   @default("text") // 'text' | 'audio'
+  notes_type     String  @default("text") // 'text' | 'audio'
   editor_notes   String?
   transcription  String?
   audio_url      String?
-  retry_count    Int      @default(0)
+  retry_count    Int     @default(0)
 
   // Status & Audit
   status    Int       @default(1) // 1=active, 0=inactive
@@ -65,5 +98,110 @@ model ClinicalNotes {
   @@index([visit_id])
   @@index([doctor_id])
   @@index([location_id])
+  @@index([status])
+}
+
+model Prescription {
+  prescription_id Int     @id @default(autoincrement())
+  visit_id        Int
+  appointment_id  Int?
+  patient_id      Int
+  doctor_id       String?
+
+  // Drug Master Fields (Snapshot)
+  drug_id      Int?
+  drug_name    String
+  drug_generic String?
+  drug_type    String?
+  drug_dosage  String?
+  drug_measure String?
+  instruction  String?
+
+  // Prescription Details
+  duration      Int?
+  duration_type String?
+  quantity      Int?
+
+  // Dosage Schedule
+  morning_bf Boolean @default(false)
+  morning_af Boolean @default(false)
+  noon_bf    Boolean @default(false)
+  noon_af    Boolean @default(false)
+  evening_bf Boolean @default(false)
+  evening_af Boolean @default(false)
+  night_bf   Boolean @default(false)
+  night_af   Boolean @default(false)
+
+  notes String?
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  visit       Visit        @relation(fields: [visit_id], references: [visit_id])
+  appointment Appointment? @relation(fields: [appointment_id], references: [appointment_id])
+  patient     Patient      @relation(fields: [patient_id], references: [patient_id])
+  doctor      Doctor?      @relation(fields: [doctor_id], references: [id])
+  drug        Drug?        @relation("PrescriptionDrug", fields: [drug_id], references: [drug_id])
+
+  @@index([visit_id])
+  @@index([appointment_id])
+  @@index([patient_id])
+  @@index([doctor_id])
+  @@index([drug_id])
+  @@index([status])
+}
+
+model PrescriptionTemplate {
+  temp_id       Int    @id @default(autoincrement())
+  template_id   BigInt
+  template_name String
+
+  // Drug Master Fields (Snapshot)
+  drug_id      Int?
+  drug_name    String
+  drug_generic String?
+  drug_type    String?
+  drug_dosage  String?
+  drug_measure String?
+  instruction  String?
+
+  // Prescription Details
+  duration      Int?
+  duration_type String?
+  quantity      Int?
+
+  // Dosage Schedule
+  morning_bf Boolean @default(false)
+  morning_af Boolean @default(false)
+  noon_bf    Boolean @default(false)
+  noon_af    Boolean @default(false)
+  evening_bf Boolean @default(false)
+  evening_af Boolean @default(false)
+  night_bf   Boolean @default(false)
+  night_af   Boolean @default(false)
+
+  notes String?
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  drug Drug? @relation("PrescriptionTemplateDrug", fields: [drug_id], references: [drug_id])
+
+  @@index([template_id])
+  @@index([drug_id])
   @@index([status])
 }

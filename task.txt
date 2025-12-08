@@ -1,5 +1,0 @@
-patient
- title, first name, last name, dob or age (two fields need but any one mandory), gender, mobile number, address, area, city, state, country, pincode, aadhar(opt), referal source(opt), comments(opt)
-
-to create mrn number start with MRN like MRN1001 auto increment
-

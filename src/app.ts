@@ -15,10 +15,11 @@ const app = express();
 
 // In your Node.js app
 app.use(cors({
-    origin: [
-        'https://9000-firebase-ehrreactgit-1756347536195.cluster-44kx2eiocbhe2tyk3zoyo3ryuo.cloudworkstations.dev', 'http://localhost:5173'
-        // Add any other origins you need
-    ],
+    origin: '*', 
+    // [
+    //     'https://9000-firebase-ehrreactgit-1756347536195.cluster-44kx2eiocbhe2tyk3zoyo3ryuo.cloudworkstations.dev', 'http://localhost:5173'
+    //     // Add any other origins you need
+    // ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

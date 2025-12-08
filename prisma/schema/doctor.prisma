@@ -32,10 +32,11 @@ model Doctor {
     deletedBy String?
 
     // Relations
-    appointments Appointment[]
-    visits       Visit[]
-    patientInfo  PatientInfo[]
+    appointments  Appointment[]
+    visits        Visit[]
+    patientInfo   PatientInfo[]
     clinicalNotes ClinicalNotes[]
+    prescriptions Prescription[]
 
     @@index([email])
     @@index([licenceNo])

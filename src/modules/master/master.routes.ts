@@ -31,6 +31,7 @@ import {
   updateLocationSchema,
   deleteLocationSchema,
 } from './location/location.schema';
+import documentTypeRoutes from './document_type/documentType.routes';
 
 const router = Router();
 
@@ -58,6 +59,9 @@ router.get('/drug', validate(listDrugSchema), drugController.list);
 router.post('/drug', validate(createDrugSchema), drugController.create);
 router.put('/drug/:id', validate(updateDrugSchema), drugController.update);
 router.delete('/drug/:id', validate(deleteDrugSchema), drugController.remove);
+
+// Document Type routes
+router.use('/document-type', documentTypeRoutes);
 
 // Location routes
 const locationController = new LocationController();

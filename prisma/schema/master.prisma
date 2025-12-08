@@ -1,7 +1,7 @@
 // Master data models: Insurance, Allergy
 
 model Insurance {
-  i_id           Int       @id @default(autoincrement())
+  i_id           Int      @id @default(autoincrement())
   type           String
   company        String
   policy         String
@@ -25,7 +25,7 @@ model Insurance {
 }
 
 model Allergy {
-  allergy_id  Int      @id @default(autoincrement())
+  allergy_id  Int    @id @default(autoincrement())
   allergyName String
   allergyType String
 
@@ -47,7 +47,7 @@ model Allergy {
 }
 
 model Location {
-  location_id   Int     @id @default(autoincrement())
+  location_id   Int             @id @default(autoincrement())
   location_name String
   address       String?
   city          String
@@ -79,6 +79,9 @@ model Drug {
   drug_measure String
   instruction  String?
 
+  prescriptions         Prescription[]         @relation("PrescriptionDrug")
+  prescriptionTemplates PrescriptionTemplate[] @relation("PrescriptionTemplateDrug")
+
   // Status & Audit
   status    Int       @default(1) // 1=active, 0=inactive
   createdAt DateTime  @default(now())
@@ -87,6 +90,28 @@ model Drug {
   updatedBy String?
   deletedAt DateTime?
   deletedBy String?
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+model DocumentType {
+  document_type_id Int     @id @default(autoincrement())
+  type_name        String  @unique
+  description      String?
+
+  // Status & Audit
+  status    Int       @default(1) // 1=active, 0=inactive
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  visitDocuments VisitDocument[]
 
   @@index([status])
   @@index([createdAt])

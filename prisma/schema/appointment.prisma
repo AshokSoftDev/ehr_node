@@ -34,6 +34,7 @@ model Appointment {
   doctor  Doctor  @relation(fields: [doctor_id], references: [id])
   visits  Visit[]
   clinicalNotes ClinicalNotes[]
+  prescriptions Prescription[]
 
   @@index([patient_id])
   @@index([doctor_id])
