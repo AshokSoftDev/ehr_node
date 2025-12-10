@@ -3,6 +3,7 @@ export interface VisitFilters {
   dateTo?: Date;
   doctor?: string; // matches doctor name/displayName/specialty
   patient?: string; // matches MRN or patient name
+  patient_id?: number; // direct patient ID filter
   reason?: string;
   status?: string; // appointment_status
   page?: number;

@@ -32,6 +32,7 @@ model Patient {
   clinicalNotes    ClinicalNotes[]
   prescriptions    Prescription[]
   visitDocuments   VisitDocument[]
+  dentalHPIs       DentalHPI[]
 }
 
 model PatientAllergy {

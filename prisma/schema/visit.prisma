@@ -24,12 +24,62 @@ model Visit {
   clinicalNotes ClinicalNotes[]
   prescriptions Prescription[]
   documents     VisitDocument[]
+  dentalHPIs    DentalHPI[]
 
   @@index([appointment_id])
   @@index([patient_id])
   @@index([location_id])
   @@index([doctor_id])
   @@index([visit_date])
+  @@index([status])
+}
+
+model DentalHPI {
+  hpi_id     Int     @id @default(autoincrement())
+  visit_id   Int
+  patient_id Int
+  doctor_id  String?
+
+  // Dentition type: 'primary' | 'mixed' | 'permanent'
+  dentition_type String
+
+  // Teeth and surfaces - stored as JSON
+  // Format: { "18": ["center", "leftTop"], "17": ["center"] }
+  teeth_surfaces Json
+
+  // Chief complaints - stored as JSON array
+  // Format: ["toothache", "swelling", "cavity"]
+  chief_complaints Json
+
+  // Severity: 'mild' | 'moderate' | 'severe'
+  severity String?
+
+  // Duration - separate fields for flexibility
+  duration_years  Int @default(0)
+  duration_months Int @default(0)
+  duration_weeks  Int @default(0)
+  duration_days   Int @default(0)
+
+  // Additional notes
+  notes String?
+
+  // Status & Audit
+  status    Int       @default(1)
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  visit   Visit   @relation(fields: [visit_id], references: [visit_id])
+  patient Patient @relation(fields: [patient_id], references: [patient_id])
+  doctor  Doctor? @relation(fields: [doctor_id], references: [id])
+
+  @@index([visit_id])
+  @@index([patient_id])
+  @@index([doctor_id])
   @@index([status])
 }
 

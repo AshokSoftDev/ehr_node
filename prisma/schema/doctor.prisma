@@ -37,6 +37,7 @@ model Doctor {
     patientInfo   PatientInfo[]
     clinicalNotes ClinicalNotes[]
     prescriptions Prescription[]
+    dentalHPIs    DentalHPI[]
 
     @@index([email])
     @@index([licenceNo])

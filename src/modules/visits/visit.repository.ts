@@ -9,6 +9,7 @@ export class VisitRepository {
       dateTo,
       doctor,
       patient,
+      patient_id,
       reason,
       status,
       page = 1,
@@ -37,7 +38,10 @@ export class VisitRepository {
         : {}),
       patient: {
         activeStatus: 1,
-        ...(patient
+        // Direct patient_id filter takes precedence
+        ...(patient_id
+          ? { patient_id: patient_id }
+          : patient
           ? {
             OR: [
               { mrn: { contains: patient, mode: 'insensitive' } },
