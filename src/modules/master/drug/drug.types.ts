@@ -4,6 +4,7 @@ export interface CreateDrugDto {
   drug_type: string;
   drug_dosage: string;
   drug_measure: string;
+  amount: number;
   instruction?: string;
 }
 

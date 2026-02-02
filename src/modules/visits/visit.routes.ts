@@ -21,6 +21,9 @@ router.use('/:visitId/documents', documentRoutes);
 router.use('/:visitId/dental-hpi', dentalHpiRoutes);
 router.use('/prescription-templates', prescriptionTemplateRoutes);
 
+// Status counts for dashboard cards
+router.get('/status-counts', controller.getStatusCounts);
+
 // List visits with filters and pagination
 router.get('/', validate(listVisitsSchema), controller.list);
 

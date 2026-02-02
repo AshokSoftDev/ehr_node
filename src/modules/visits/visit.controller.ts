@@ -13,6 +13,7 @@ export class VisitController {
       dateFrom: q.dateFrom ? new Date(String(q.dateFrom)) : undefined,
       dateTo: q.dateTo ? new Date(String(q.dateTo)) : undefined,
       doctor: q.doctor as string,
+      doctor_id: q.doctor_id as string,
       patient: q.patient as string,
       reason: q.reason as string,
       status: q.status as string,
@@ -20,6 +21,16 @@ export class VisitController {
       limit: q.limit ? Number(q.limit) : 10,
     };
     const data = await this.service.list(filters);
+    res.status(200).json({ status: 'success', data });
+  });
+
+  getStatusCounts = catchAsync(async (req: AuthRequest, res: Response) => {
+    const q = req.query as any;
+    const filters = {
+      date: q.date ? new Date(String(q.date)) : undefined,
+      doctorId: q.doctorId as string | undefined,
+    };
+    const data = await this.service.getStatusCounts(filters);
     res.status(200).json({ status: 'success', data });
   });
 }

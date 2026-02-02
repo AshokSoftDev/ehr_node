@@ -1,0 +1,116 @@
+// Billing Models: Invoice, InvoiceItem, Receipt
+
+model Invoice {
+    invoice_id     Int    @id @default(autoincrement())
+    invoice_number String @unique
+    patient_id     Int
+    visit_id       Int
+
+    // Totals (calculated)
+    gross_total     Decimal @default(0)
+    discount_type   String  @default("percentage") // "percentage" | "fixed"
+    discount_value  Decimal @default(0)
+    discount_amount Decimal @default(0) // Calculated discount
+    tax_amount      Decimal @default(0)
+    net_total       Decimal @default(0)
+
+    // Additional fields
+    coupon_code            String?
+    coupon_discount_amount Decimal   @default(0)
+    discount_reason        String?
+    invoice_date           DateTime  @default(now())
+    due_date               DateTime?
+    notes                  String?
+
+    status String @default("draft") // draft, sent, paid, cancelled
+
+    // Audit fields
+    createdAt DateTime  @default(now())
+    createdBy String?
+    updatedAt DateTime  @updatedAt
+    updatedBy String?
+    deletedAt DateTime?
+    deletedBy String?
+
+    // Relations
+    patient  Patient       @relation(fields: [patient_id], references: [patient_id])
+    visit    Visit         @relation(fields: [visit_id], references: [visit_id])
+    items    InvoiceItem[]
+    receipts Receipt[]
+
+    @@index([patient_id])
+    @@index([visit_id])
+    @@index([invoice_number])
+    @@index([status])
+    @@index([invoice_date])
+    @@index([createdAt])
+    @@index([deletedAt])
+}
+
+model InvoiceItem {
+    item_id    Int @id @default(autoincrement())
+    invoice_id Int
+
+    // Item details
+    item_type    String // "drug" | "procedure" | "package" | "custom"
+    item_name    String
+    reference_id Int? // drug_id, procedure_id, etc.
+
+    // Pricing
+    quantity        Int     @default(1)
+    unit_amount     Decimal @default(0)
+    premium         Decimal @default(0)
+    discount_type   String  @default("percentage") // "percentage" | "fixed"
+    discount_value  Decimal @default(0)
+    discount_amount Decimal @default(0)
+    tax_applicable  Boolean @default(false)
+    net_amount      Decimal @default(0)
+
+    // Additional
+    notes         String?
+    assigned_user String?
+
+    // Audit
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    invoice Invoice @relation(fields: [invoice_id], references: [invoice_id], onDelete: Cascade)
+
+    @@index([invoice_id])
+    @@index([item_type])
+    @@index([reference_id])
+}
+
+model Receipt {
+    receipt_id     Int    @id @default(autoincrement())
+    receipt_number String @unique
+    invoice_id     Int
+    patient_id     Int
+
+    amount         Decimal
+    payment_method String // cash, card, upi, bank_transfer, other
+    payment_date   DateTime @default(now())
+    notes          String?
+
+    // Audit
+    status    Int       @default(1)
+    createdAt DateTime  @default(now())
+    createdBy String?
+    updatedAt DateTime  @updatedAt
+    updatedBy String?
+    deletedAt DateTime?
+    deletedBy String?
+
+    // Relations
+    invoice Invoice @relation(fields: [invoice_id], references: [invoice_id])
+    patient Patient @relation(fields: [patient_id], references: [patient_id])
+
+    @@index([invoice_id])
+    @@index([patient_id])
+    @@index([receipt_number])
+    @@index([status])
+    @@index([payment_date])
+    @@index([createdAt])
+    @@index([deletedAt])
+}

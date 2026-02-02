@@ -33,6 +33,8 @@ model Patient {
   prescriptions    Prescription[]
   visitDocuments   VisitDocument[]
   dentalHPIs       DentalHPI[]
+  invoices         Invoice[]
+  receipts         Receipt[]
 }
 
 model PatientAllergy {

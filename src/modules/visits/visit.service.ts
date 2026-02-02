@@ -7,5 +7,9 @@ export class VisitService {
   list(filters: VisitFilters) {
     return this.repo.list(filters);
   }
+
+  getStatusCounts(filters: { date?: Date; doctorId?: string }) {
+    return this.repo.getStatusCounts(filters);
+  }
 }
 

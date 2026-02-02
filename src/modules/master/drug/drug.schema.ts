@@ -13,6 +13,7 @@ export const createDrugSchema = z.object({
     drug_type: z.string().min(1),
     drug_dosage: z.string().min(1),
     drug_measure: z.string().min(1),
+    amount: z.number().min(0.01),
     instruction: z.string().optional(),
   }),
 });
@@ -27,6 +28,7 @@ export const updateDrugSchema = z.object({
     drug_type: z.string().min(1).optional(),
     drug_dosage: z.string().min(1).optional(),
     drug_measure: z.string().min(1).optional(),
+    amount: z.number().min(0.01).optional(),
     instruction: z.string().optional(),
     status: z.number().int().min(0).max(1).optional(),
   }),

@@ -77,6 +77,7 @@ model Drug {
   drug_type    String
   drug_dosage  String
   drug_measure String
+  amount       Decimal @default(0)
   instruction  String?
 
   prescriptions         Prescription[]         @relation("PrescriptionDrug")

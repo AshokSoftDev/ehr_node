@@ -6,7 +6,7 @@ import { errorHandler, notFound } from './middleware/error.middleware';
 import { env } from './config/env';
 
 const app = express();
-
+  
 // CORS configuration
 // app.use(cors({
 //     origin: env.CORS_ORIGIN || '*',
