@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const validate_middleware_1 = require("../../../middleware/validate.middleware");
+const patientInfo_controller_1 = require("./patientInfo.controller");
+const patientInfo_schema_1 = require("./patientInfo.schema");
+const router = (0, express_1.Router)({ mergeParams: true });
+const controller = new patientInfo_controller_1.PatientInfoController();
+router.get('/', (0, validate_middleware_1.validate)(patientInfo_schema_1.getPatientInfoSchema), controller.get);
+router.post('/', (0, validate_middleware_1.validate)(patientInfo_schema_1.createPatientInfoSchema), controller.create);
+router.put('/', (0, validate_middleware_1.validate)(patientInfo_schema_1.updatePatientInfoSchema), controller.update);
+exports.default = router;

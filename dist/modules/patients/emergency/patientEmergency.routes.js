@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const validate_middleware_1 = require("../../../middleware/validate.middleware");
+const patientEmergency_controller_1 = require("./patientEmergency.controller");
+const patientEmergency_schema_1 = require("./patientEmergency.schema");
+const router = (0, express_1.Router)({ mergeParams: true });
+const controller = new patientEmergency_controller_1.PatientEmergencyController();
+router.get('/', (0, validate_middleware_1.validate)(patientEmergency_schema_1.listPatientEmergencySchema), controller.list);
+router.get('/:peId', (0, validate_middleware_1.validate)(patientEmergency_schema_1.getPatientEmergencySchema), controller.get);
+router.post('/', (0, validate_middleware_1.validate)(patientEmergency_schema_1.createPatientEmergencySchema), controller.create);
+router.put('/:peId', (0, validate_middleware_1.validate)(patientEmergency_schema_1.updatePatientEmergencySchema), controller.update);
+router.delete('/:peId', (0, validate_middleware_1.validate)(patientEmergency_schema_1.getPatientEmergencySchema), controller.remove);
+exports.default = router;

@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const validate_middleware_1 = require("../../../middleware/validate.middleware");
+const dentalHpi_controller_1 = require("./dentalHpi.controller");
+const dentalHpi_schema_1 = require("./dentalHpi.schema");
+const router = (0, express_1.Router)({ mergeParams: true });
+const controller = new dentalHpi_controller_1.DentalHpiController();
+router.get('/', (0, validate_middleware_1.validate)(dentalHpi_schema_1.listDentalHpiSchema), controller.list);
+router.get('/:hpiId', (0, validate_middleware_1.validate)(dentalHpi_schema_1.dentalHpiParamsSchema), controller.getOne);
+router.post('/', (0, validate_middleware_1.validate)(dentalHpi_schema_1.createDentalHpiSchema), controller.create);
+router.put('/:hpiId', (0, validate_middleware_1.validate)(dentalHpi_schema_1.updateDentalHpiSchema), controller.update);
+router.delete('/:hpiId', (0, validate_middleware_1.validate)(dentalHpi_schema_1.dentalHpiParamsSchema), controller.remove);
+exports.default = router;
