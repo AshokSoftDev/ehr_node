@@ -76,7 +76,7 @@ export class AppointmentRepository {
       prisma.appointment.findMany({
         where,
         include: {
-          patient: { select: { patient_id: true, mrn: true, firstName: true, lastName: true } },
+          patient: { select: { patient_id: true, mrn: true, firstName: true, lastName: true, dateOfBirth: true, gender: true } },
           doctor: { select: { id: true, displayName: true, specialty: true } },
         },
         orderBy: { appointment_date: 'desc' },
