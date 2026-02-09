@@ -39,4 +39,17 @@ export class ClinicalNoteController {
     const data = await this.service.remove(visitId, noteId, req.user?.userId);
     res.status(200).json({ status: 'success', message: 'Clinical note deleted', data });
   });
+
+  /**
+   * Create clinical note with AI-generated SOAP notes
+   */
+  createWithSoap = catchAsync(async (req: AuthRequest, res: Response) => {
+    const visitId = Number(req.params.visitId);
+    if (!req.file) {
+      res.status(400).json({ status: 'error', message: 'Audio file is required' });
+      return;
+    }
+    const data = await this.service.createWithSoapNotes(visitId, req.file, req.user?.userId);
+    res.status(201).json({ status: 'success', data });
+  });
 }

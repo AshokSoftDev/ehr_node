@@ -16,6 +16,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.get('/', validate(listClinicalNotesSchema), controller.list);
 router.get('/:noteId', validate(clinicalNoteParamsSchema), controller.getOne);
 router.post('/', upload.single('audio'), validate(createClinicalNoteSchema), controller.create);
+router.post('/soap', upload.single('audio'), controller.createWithSoap); // AI SOAP notes generation
 router.put('/:noteId', validate(updateClinicalNoteSchema), controller.update);
 router.delete('/:noteId', validate(clinicalNoteParamsSchema), controller.remove);
 

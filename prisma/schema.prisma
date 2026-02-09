@@ -700,17 +700,19 @@ model VisitDocument {
 }
 
 model ClinicalNotes {
-  cn_id          Int     @id @default(autoincrement())
-  patient_id     Int
-  appointment_id Int?
-  visit_id       Int
-  location_id    Int?
-  doctor_id      String
-  notes_type     String  @default("text") // 'text' | 'audio'
-  editor_notes   String?
-  transcription  String?
-  audio_url      String?
-  retry_count    Int     @default(0)
+  cn_id                Int     @id @default(autoincrement())
+  patient_id           Int
+  appointment_id       Int?
+  visit_id             Int
+  location_id          Int?
+  doctor_id            String
+  notes_type           String  @default("text") // 'text' | 'audio'
+  editor_notes         String?
+  transcription        String?
+  audio_url            String?
+  retry_count          Int     @default(0)
+  ai_notes             String? // Stores AI-generated SOAP notes as JSON
+  ai_notes_retry_count Int     @default(0) // Tracks AI generation retry attempts
 
   // Status & Audit
   status    Int       @default(1) // 1=active, 0=inactive
