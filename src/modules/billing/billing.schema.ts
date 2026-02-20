@@ -97,3 +97,11 @@ export const idParamSchema = z.object({
 export const visitIdParamSchema = z.object({
   visitId: z.coerce.number().int().positive(),
 });
+
+// Billing Visits Filters Schema (consolidated endpoint)
+export const billingVisitsFiltersSchema = z.object({
+  search: z.string().optional(),
+  status: z.string().default('1'),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(15),
+});

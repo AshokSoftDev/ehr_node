@@ -9,6 +9,7 @@ import type {
   CalculatedInvoiceItem,
   CalculatedInvoice,
   CreateInvoiceItemDto,
+  BillingVisitsFilters,
 } from './billing.types';
 
 // Tax rate configuration (can be moved to env or config)
@@ -307,7 +308,7 @@ export const billingService = {
   async createReceipt(dto: CreateReceiptDto, createdBy?: string) {
     const receiptNumber = await billingRepository.generateReceiptNumber();
 
-    return billingRepository.createReceipt({
+    const receipt = await billingRepository.createReceipt({
       receipt_number: receiptNumber,
       invoice: { connect: { invoice_id: dto.invoice_id } },
       patient: { connect: { patient_id: dto.patient_id } },
@@ -317,6 +318,14 @@ export const billingService = {
       notes: dto.notes,
       createdBy,
     });
+
+    // Auto-mark invoice as paid
+    await billingRepository.updateInvoice(dto.invoice_id, {
+      status: 'paid',
+      updatedBy: createdBy,
+    });
+
+    return receipt;
   },
 
   /**
@@ -364,5 +373,12 @@ export const billingService = {
       throw new Error('Receipt not found');
     }
     return billingRepository.deleteReceipt(id, deletedBy);
+  },
+
+  /**
+   * List billing visits with invoice + receipt data
+   */
+  async listBillingVisits(filters: BillingVisitsFilters) {
+    return billingRepository.findBillingVisits(filters);
   },
 };

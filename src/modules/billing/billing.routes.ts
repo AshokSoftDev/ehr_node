@@ -13,6 +13,9 @@ router.delete('/invoices/:id', billingController.deleteInvoice);
 // Visit prescriptions for invoice
 router.get('/visits/:visitId/prescriptions-for-invoice', billingController.getVisitPrescriptionsForInvoice);
 
+// Consolidated billing visits
+router.get('/visits', billingController.listBillingVisits);
+
 // Receipt routes
 router.post('/receipts', billingController.createReceipt);
 router.get('/receipts', billingController.listReceipts);

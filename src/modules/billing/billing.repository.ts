@@ -1,6 +1,6 @@
 import { prisma } from '../../utils/prisma';
 import type { Prisma } from '@prisma/client';
-import type { InvoiceFilters, ReceiptFilters } from './billing.types';
+import type { InvoiceFilters, ReceiptFilters, BillingVisitsFilters } from './billing.types';
 
 export const billingRepository = {
   // Invoice operations
@@ -347,5 +347,73 @@ export const billingRepository = {
     }
 
     return `${prefix}-${String(sequence).padStart(4, '0')}`;
+  },
+
+  // Consolidated billing visits with invoice + receipt + patient
+  async findBillingVisits(filters: BillingVisitsFilters) {
+    const { search, status = '1', page = 1, limit = 15 } = filters;
+
+    const where: Prisma.VisitWhereInput = {
+      deletedAt: null,
+      ...(status && { status: Number(status) }),
+      ...(search && {
+        OR: [
+          { patient: { firstName: { contains: search, mode: 'insensitive' as const } } },
+          { patient: { lastName: { contains: search, mode: 'insensitive' as const } } },
+          { patient: { mrn: { contains: search, mode: 'insensitive' as const } } },
+          { patient: { mobileNumber: { contains: search, mode: 'insensitive' as const } } },
+        ],
+      }),
+    };
+
+    const [visits, total] = await Promise.all([
+      prisma.visit.findMany({
+        where,
+        include: {
+          patient: {
+            select: {
+              patient_id: true,
+              firstName: true,
+              lastName: true,
+              mrn: true,
+              mobileNumber: true,
+            },
+          },
+          doctor: {
+            select: {
+              id: true,
+              displayName: true,
+            },
+          },
+          appointment: {
+            select: {
+              appointment_id: true,
+              appointment_type: true,
+            },
+          },
+          invoices: {
+            where: { deletedAt: null },
+            include: {
+              items: true,
+              receipts: {
+                where: { deletedAt: null, status: 1 },
+              },
+            },
+          },
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { visit_date: 'desc' },
+      }),
+      prisma.visit.count({ where }),
+    ]);
+
+    return {
+      visits,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   },
 };

@@ -113,3 +113,10 @@ export interface CalculatedInvoice {
   net_total: number;
 }
 
+export interface BillingVisitsFilters {
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}
+

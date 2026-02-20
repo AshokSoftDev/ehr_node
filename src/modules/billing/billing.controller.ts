@@ -9,6 +9,7 @@ import {
   receiptFiltersSchema,
   idParamSchema,
   visitIdParamSchema,
+  billingVisitsFiltersSchema,
 } from './billing.schema';
 
 export const billingController = {
@@ -127,6 +128,17 @@ export const billingController = {
       const deletedBy = req.user?.userId;
       await billingService.deleteReceipt(id, deletedBy);
       res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Consolidated billing visits
+  async listBillingVisits(req: Request, res: Response, next: NextFunction) {
+    try {
+      const filters = billingVisitsFiltersSchema.parse(req.query);
+      const result = await billingService.listBillingVisits(filters);
+      res.json(result);
     } catch (error) {
       next(error);
     }
