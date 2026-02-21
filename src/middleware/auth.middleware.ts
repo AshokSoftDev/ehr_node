@@ -67,16 +67,11 @@ export function requireModule(moduleKey: string) {
     return async (req: Request, _res: Response, next: NextFunction) => {
         if (!req.user) return next(new AppError('Authentication required', 401));
 
-        // Root users: allow all
-        const dbUser = await prisma.user.findUnique({
-            where: { userId: req.user.userId },
-            select: { parentId: true, groupId: true },
-        });
-        if (!dbUser) return next(new AppError('User not found', 404));
-        if (dbUser.parentId === null) return next(); // root-level
+        // Root users bypass all module permission checks
+        if (req.user.accountType === 'root') return next();
 
         // No group -> deny
-        if (!dbUser.groupId) return next(new AppError('Insufficient permissions', 403));
+        if (!req.user.groupId) return next(new AppError('Insufficient permissions', 403));
 
         // Resolve moduleId: if moduleKey is not an id, look up by name
         let moduleId = moduleKey;
@@ -92,7 +87,7 @@ export function requireModule(moduleKey: string) {
 
         // Check group module permission
         const perm = await prisma.groupModulePermission.findUnique({
-            where: { groupId_moduleId: { groupId: dbUser.groupId, moduleId } },
+            where: { groupId_moduleId: { groupId: req.user.groupId, moduleId } },
             select: { hasAccess: true },
         });
 

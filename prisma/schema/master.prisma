@@ -1,22 +1,37 @@
-// Master data models: Insurance, Allergy
+// Master data models: Insurance, Allergy, Location, Drug, DocumentType
 
+/// Insurance — Insurance policy master record
 model Insurance {
+  /// Unique auto-incremented identifier
   i_id           Int      @id @default(autoincrement())
+  /// Insurance type (e.g., "Health", "Dental", "Life")
   type           String
+  /// Insurance company name
   company        String
+  /// Policy plan name
   policy         String
+  /// Policy number
   policyNo       String
+  /// Policy validity start date
   validationFrom DateTime
+  /// Policy validity end date
   validationTo   DateTime
+  /// Additional notes
   notes          String?
 
-  // Status & Audit
-  status    Int       @default(1) // 1=active, 0=inactive
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   @@index([status])
@@ -24,18 +39,28 @@ model Insurance {
   @@index([deletedAt])
 }
 
+/// Allergy — Allergy master record
 model Allergy {
+  /// Unique auto-incremented allergy identifier
   allergy_id  Int    @id @default(autoincrement())
+  /// Name of the allergy (e.g., "Penicillin", "Peanuts")
   allergyName String
+  /// Category/type of allergy (e.g., "Drug", "Food", "Environmental")
   allergyType String
 
-  // Status & Audit
-  status    Int       @default(1) // 1=active, 0=inactive
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   // Relations
@@ -46,22 +71,35 @@ model Allergy {
   @@index([deletedAt])
 }
 
+/// Location — Clinic/branch location
 model Location {
+  /// Unique auto-incremented location identifier
   location_id   Int             @id @default(autoincrement())
+  /// Location/branch name
   location_name String
+  /// Street address
   address       String?
+  /// City
   city          String
+  /// State / province
   state         String
   clinicalNotes ClinicalNotes[]
 
-  // Status & Audit
-  status    Int       @default(1) // 1=active, 0=inactive
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Whether the location is currently active (boolean flag)
   active    Boolean   @default(true)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   @@index([status])
@@ -70,26 +108,41 @@ model Location {
   @@index([deletedAt])
 }
 
+/// Drug — Drug/medication master record
 model Drug {
+  /// Unique auto-incremented drug identifier
   drug_id      Int     @id @default(autoincrement())
+  /// Generic/chemical name of the drug
   drug_generic String
+  /// Brand/trade name of the drug
   drug_name    String
+  /// Type of drug (e.g., "Tablet", "Capsule", "Syrup", "Injection")
   drug_type    String
+  /// Dosage strength (e.g., "500", "250")
   drug_dosage  String
+  /// Unit of measure (e.g., "mg", "ml", "g")
   drug_measure String
+  /// Price per unit
   amount       Decimal @default(0)
+  /// Default usage instructions (e.g., "Take after food")
   instruction  String?
 
   prescriptions         Prescription[]         @relation("PrescriptionDrug")
   prescriptionTemplates PrescriptionTemplate[] @relation("PrescriptionTemplateDrug")
 
-  // Status & Audit
-  status    Int       @default(1) // 1=active, 0=inactive
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   @@index([status])
@@ -97,18 +150,28 @@ model Drug {
   @@index([deletedAt])
 }
 
+/// DocumentType — Master list of document types for visit uploads
 model DocumentType {
+  /// Unique auto-incremented identifier
   document_type_id Int     @id @default(autoincrement())
+  /// Document type name (e.g., "X-Ray", "Lab Report", "Consent Form") — unique
   type_name        String  @unique
+  /// Description of the document type
   description      String?
 
-  // Status & Audit
-  status    Int       @default(1) // 1=active, 0=inactive
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   // Relations

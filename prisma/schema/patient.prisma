@@ -1,26 +1,50 @@
+/// Patient — Core patient demographic record
 model Patient {
+  /// Unique auto-incremented patient identifier
   patient_id    Int       @id @default(autoincrement())
+  /// Medical Record Number — unique across the system
   mrn           String    @unique
+  /// Title (e.g., "Mr", "Mrs", "Dr")
   title         String
+  /// First name
   firstName     String
+  /// Last name
   lastName      String
+  /// Date of birth (optional)
   dateOfBirth   DateTime?
+  /// Age in years (may be manually entered if DOB unknown)
   age           Int?
+  /// Gender (e.g., "Male", "Female", "Other")
   gender        String
+  /// Primary mobile/phone number
   mobileNumber  String
+  /// Street address
   address       String
+  /// Area / locality
   area          String
+  /// City
   city          String
+  /// State / province
   state         String
+  /// Country
   country       String
+  /// Postal / PIN code
   pincode       String
+  /// Aadhaar number (Indian national ID, optional)
   aadhar        String?
+  /// Referral source (e.g., "Walk-in", "Doctor referral", "Online")
   referalSource String?
+  /// General comments or notes about the patient
   comments      String?
+  /// Record status: 1 = active, 0 = inactive
   activeStatus  Int       @default(1)
+  /// Timestamp when the record was created
   createdAt     DateTime  @default(now())
+  /// User ID who created this record
   createdBy     String
+  /// Timestamp of last update
   updatedAt     DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy     String
 
   // Relations
@@ -37,20 +61,32 @@ model Patient {
   receipts         Receipt[]
 }
 
+/// PatientAllergy — Records a patient's allergy information
 model PatientAllergy {
+  /// Unique auto-incremented identifier
   id          Int     @id @default(autoincrement())
+  /// FK to Patient
   patient_id  Int
+  /// FK to Allergy master (optional if custom allergy name)
   allergy_id  Int?
+  /// Name of the allergy (may differ from master if custom)
   allergyName String
+  /// Additional notes about the allergy
   notes       String?
 
-  // Status & Audit
-  status    Int       @default(1) // 1=active, 0=inactive
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   // Relations
@@ -64,25 +100,45 @@ model PatientAllergy {
   @@index([deletedAt])
 }
 
+/// PatientInfo — Extended patient information (one-to-one with Patient)
 model PatientInfo {
+  /// Unique auto-incremented identifier
   pi_id           Int       @id @default(autoincrement())
+  /// FK to Patient (unique — one record per patient)
   patient_id      Int       @unique
+  /// Blood group (e.g., "A+", "O-", "AB+")
   bloodGroup      String
+  /// Whether the patient is an overseas/international patient
   overseas        Boolean
+  /// Passport number (for overseas patients)
   passportNumber  String?
+  /// Passport validity date
   validityDate    DateTime?
+  /// Patient's occupation
   occupation      String?
+  /// Department (if employed)
   department      String?
+  /// Company / employer name
   companyName     String?
+  /// Job designation / title
   designation     String?
+  /// Employee code / ID
   employeeCode    String?
+  /// FK to Doctor — the patient's primary/assigned doctor
   primaryDoctorId String?
+  /// Record status: 1 = active, 0 = inactive
   activeStatus    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt       DateTime  @default(now())
+  /// User ID who created this record
   createdBy       String?
+  /// Timestamp of last update
   updatedAt       DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy       String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt       DateTime?
+  /// User ID who soft-deleted this record
   deletedBy       String?
 
   patient Patient @relation(fields: [patient_id], references: [patient_id])
@@ -93,18 +149,31 @@ model PatientInfo {
   @@index([activeStatus])
 }
 
+/// PatientEmergency — Emergency contact for a patient
 model PatientEmergency {
+  /// Unique auto-incremented identifier
   pe_id         Int       @id @default(autoincrement())
+  /// FK to Patient
   patient_id    Int
+  /// Emergency contact person's name
   name          String
+  /// Relationship to patient (e.g., "Spouse", "Parent", "Sibling")
   relation      String
+  /// Emergency contact phone number
   contactNumber String
+  /// Record status: 1 = active, 0 = inactive
   status        Int       @default(1)
+  /// Timestamp when the record was created
   createdAt     DateTime  @default(now())
+  /// User ID who created this record
   createdBy     String?
+  /// Timestamp of last update
   updatedAt     DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy     String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt     DateTime?
+  /// User ID who soft-deleted this record
   deletedBy     String?
 
   patient Patient @relation(fields: [patient_id], references: [patient_id])

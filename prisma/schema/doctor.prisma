@@ -1,34 +1,57 @@
+/// Doctor — Medical practitioner profile
 model Doctor {
+    /// Unique UUID identifier for the doctor
     id           String   @id @default(uuid())
+    /// Title (e.g., "Dr.", "Prof.")
     title        String
+    /// First name
     firstName    String
+    /// Last name
     lastName     String
+    /// Date of birth
     dob          DateTime
+    /// Email address (unique)
     email        String   @unique
+    /// Medical licence number (unique)
     licenceNo    String   @unique
+    /// Academic degree (e.g., "MBBS", "MDS")
     degree       String
+    /// Medical specialty (e.g., "General Dentistry", "Orthodontics")
     specialty    String
-    timeBlock    String? // optional - stores values like "5min", "10min", "15min", "30min", "1hr", "1.5hr", "2hr", "3hr"
+    /// Appointment time block duration (e.g., "5min", "10min", "15min", "30min", "1hr")
+    timeBlock    String?
+    /// Display name shown in UI and reports
     displayName  String
-    displayColor String // hex color code
+    /// Hex color code for calendar/UI display (e.g., "#4f46e5")
+    displayColor String
 
-    // Optional address fields
+    /// Street address
     address String?
+    /// Area / locality
     area    String?
+    /// City
     city    String?
+    /// State / province
     state   String?
+    /// Country
     country String?
+    /// Postal / PIN code
     pincode String?
 
-    // Status field
-    status Int @default(1) // 1=active, 0=inactive
+    /// Record status: 1 = active, 0 = inactive
+    status Int @default(1)
 
-    // Audit fields
+    /// Timestamp when the record was created
     createdAt DateTime  @default(now())
+    /// User ID who created this record
     createdBy String?
+    /// Timestamp of last update
     updatedAt DateTime  @updatedAt
+    /// User ID who last updated this record
     updatedBy String?
+    /// Soft-delete timestamp (null = not deleted)
     deletedAt DateTime?
+    /// User ID who soft-deleted this record
     deletedBy String?
 
     // Relations

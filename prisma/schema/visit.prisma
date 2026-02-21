@@ -1,20 +1,35 @@
+/// Visit — Patient visit/encounter record
 model Visit {
+  /// Unique auto-incremented visit identifier
   visit_id         Int      @id @default(autoincrement())
+  /// FK to Appointment (null for walk-in visits)
   appointment_id   Int?
+  /// FK to Patient
   patient_id       Int
+  /// Date and time of the visit
   visit_date       DateTime
+  /// FK to Location/branch (optional)
   location_id      Int?
+  /// FK to Doctor — attending doctor
   doctor_id        String
+  /// Type of visit (e.g., "Consultation", "Follow-up", "Emergency")
   visit_type       String
+  /// Patient's reason for visiting
   reason_for_visit String?
 
-  // Status & Audit
-  status    Int       @default(1) // 1=active, 0=inactive
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   // Relations
@@ -35,42 +50,54 @@ model Visit {
   @@index([status])
 }
 
+/// DentalHPI — Dental History of Present Illness record
 model DentalHPI {
+  /// Unique auto-incremented identifier
   hpi_id     Int     @id @default(autoincrement())
+  /// FK to Visit
   visit_id   Int
+  /// FK to Patient
   patient_id Int
+  /// FK to Doctor (optional)
   doctor_id  String?
 
-  // Dentition type: 'primary' | 'mixed' | 'permanent'
+  /// Dentition type: "primary", "mixed", or "permanent"
   dentition_type String
 
-  // Teeth and surfaces - stored as JSON
-  // Format: { "18": ["center", "leftTop"], "17": ["center"] }
+  /// Teeth and surfaces selected — JSON object (e.g., {"18": ["center", "leftTop"], "17": ["center"]})
   teeth_surfaces Json
 
-  // Chief complaints - stored as JSON array
-  // Format: ["toothache", "swelling", "cavity"]
+  /// Chief complaints — JSON array (e.g., ["toothache", "swelling", "cavity"])
   chief_complaints Json
 
-  // Severity: 'mild' | 'moderate' | 'severe'
+  /// Pain/condition severity: "mild", "moderate", or "severe"
   severity String?
 
-  // Duration - separate fields for flexibility
+  /// Duration component — years
   duration_years  Int @default(0)
+  /// Duration component — months
   duration_months Int @default(0)
+  /// Duration component — weeks
   duration_weeks  Int @default(0)
+  /// Duration component — days
   duration_days   Int @default(0)
 
-  // Additional notes
+  /// Additional clinical notes
   notes String?
 
-  // Status & Audit
+  /// Record status: 1 = active, 0 = inactive
   status    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   // Relations
@@ -84,24 +111,40 @@ model DentalHPI {
   @@index([status])
 }
 
+/// VisitDocument — File/document attached to a visit
 model VisitDocument {
+  /// Unique auto-incremented document identifier
   document_id      Int     @id @default(autoincrement())
+  /// FK to Visit
   visit_id         Int
+  /// FK to Patient
   patient_id       Int
+  /// FK to DocumentType master
   document_type_id Int
-  file_name        String // Original filename
-  file_path        String // Relative path on disk
+  /// Original uploaded file name
+  file_name        String
+  /// Relative storage path on disk
+  file_path        String
+  /// Description or caption for the document
   description      String?
-  mime_type        String // "application/pdf", "image/jpeg"
-  file_size        Int // bytes
+  /// MIME type (e.g., "application/pdf", "image/jpeg")
+  mime_type        String
+  /// File size in bytes
+  file_size        Int
 
-  // Status & Audit
+  /// Record status: 1 = active, 0 = inactive
   status    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   // Relations
@@ -115,28 +158,48 @@ model VisitDocument {
   @@index([status])
 }
 
+/// ClinicalNotes — Clinical documentation for a visit (text or audio-based)
 model ClinicalNotes {
+  /// Unique auto-incremented identifier
   cn_id                Int     @id @default(autoincrement())
+  /// FK to Patient
   patient_id           Int
+  /// FK to Appointment (optional)
   appointment_id       Int?
+  /// FK to Visit
   visit_id             Int
+  /// FK to Location (optional)
   location_id          Int?
+  /// FK to Doctor — author of the notes
   doctor_id            String
-  notes_type           String  @default("text") // 'text' | 'audio'
+  /// Notes input type: "text" or "audio"
+  notes_type           String  @default("text")
+  /// Rich-text editor notes content
   editor_notes         String?
+  /// Audio transcription text (for audio notes)
   transcription        String?
+  /// URL to the uploaded audio file
   audio_url            String?
+  /// Number of transcription retry attempts
   retry_count          Int     @default(0)
-  ai_notes             String? // Stores AI-generated SOAP notes as JSON
-  ai_notes_retry_count Int     @default(0) // Tracks AI generation retry attempts
+  /// AI-generated SOAP notes stored as JSON
+  ai_notes             String?
+  /// Number of AI note generation retry attempts
+  ai_notes_retry_count Int     @default(0)
 
-  // Status & Audit
-  status    Int       @default(1) // 1=active, 0=inactive
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   // Relations
@@ -154,46 +217,77 @@ model ClinicalNotes {
   @@index([status])
 }
 
+/// Prescription — Drug prescription line item for a visit
 model Prescription {
+  /// Unique auto-incremented prescription identifier
   prescription_id Int     @id @default(autoincrement())
+  /// FK to Visit
   visit_id        Int
+  /// FK to Appointment (optional)
   appointment_id  Int?
+  /// FK to Patient
   patient_id      Int
+  /// FK to Doctor (optional)
   doctor_id       String?
 
-  // Drug Master Fields (Snapshot)
+  // Drug Master Fields (Snapshot at prescription time)
+  /// FK to Drug master (optional if custom drug)
   drug_id      Int?
+  /// Drug brand/trade name (snapshot)
   drug_name    String
+  /// Drug generic/chemical name (snapshot)
   drug_generic String?
+  /// Drug type — Tablet, Capsule, Syrup, etc. (snapshot)
   drug_type    String?
+  /// Drug dosage strength (snapshot)
   drug_dosage  String?
+  /// Drug unit of measure (snapshot)
   drug_measure String?
+  /// Usage instructions (snapshot)
   instruction  String?
 
   // Prescription Details
+  /// Duration value (e.g., 7 for "7 days")
   duration      Int?
+  /// Duration unit (e.g., "days", "weeks", "months")
   duration_type String?
+  /// Total quantity to dispense
   quantity      Int?
 
   // Dosage Schedule
+  /// Morning — before food
   morning_bf Boolean @default(false)
+  /// Morning — after food
   morning_af Boolean @default(false)
+  /// Noon — before food
   noon_bf    Boolean @default(false)
+  /// Noon — after food
   noon_af    Boolean @default(false)
+  /// Evening — before food
   evening_bf Boolean @default(false)
+  /// Evening — after food
   evening_af Boolean @default(false)
+  /// Night — before food
   night_bf   Boolean @default(false)
+  /// Night — after food
   night_af   Boolean @default(false)
 
+  /// Additional prescription notes
   notes String?
 
-  // Status & Audit
-  status    Int       @default(1) // 1=active, 0=inactive
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   // Relations
@@ -211,44 +305,73 @@ model Prescription {
   @@index([status])
 }
 
+/// PrescriptionTemplate — Reusable prescription template
 model PrescriptionTemplate {
+  /// Unique auto-incremented identifier
   temp_id       Int    @id @default(autoincrement())
+  /// Template group identifier (groups multiple drugs into one template)
   template_id   BigInt
+  /// Template display name
   template_name String
 
   // Drug Master Fields (Snapshot)
+  /// FK to Drug master (optional if custom drug)
   drug_id      Int?
+  /// Drug brand/trade name (snapshot)
   drug_name    String
+  /// Drug generic/chemical name (snapshot)
   drug_generic String?
+  /// Drug type — Tablet, Capsule, Syrup, etc. (snapshot)
   drug_type    String?
+  /// Drug dosage strength (snapshot)
   drug_dosage  String?
+  /// Drug unit of measure (snapshot)
   drug_measure String?
+  /// Usage instructions (snapshot)
   instruction  String?
 
   // Prescription Details
+  /// Duration value (e.g., 7 for "7 days")
   duration      Int?
+  /// Duration unit (e.g., "days", "weeks", "months")
   duration_type String?
+  /// Total quantity to dispense
   quantity      Int?
 
   // Dosage Schedule
+  /// Morning — before food
   morning_bf Boolean @default(false)
+  /// Morning — after food
   morning_af Boolean @default(false)
+  /// Noon — before food
   noon_bf    Boolean @default(false)
+  /// Noon — after food
   noon_af    Boolean @default(false)
+  /// Evening — before food
   evening_bf Boolean @default(false)
+  /// Evening — after food
   evening_af Boolean @default(false)
+  /// Night — before food
   night_bf   Boolean @default(false)
+  /// Night — after food
   night_af   Boolean @default(false)
 
+  /// Additional notes
   notes String?
 
-  // Status & Audit
-  status    Int       @default(1) // 1=active, 0=inactive
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   // Relations

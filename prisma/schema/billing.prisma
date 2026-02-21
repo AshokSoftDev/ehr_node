@@ -1,35 +1,58 @@
 // Billing Models: Invoice, InvoiceItem, Receipt
 
+/// Invoice — Billing invoice for a patient visit
 model Invoice {
+    /// Unique auto-incremented invoice identifier
     invoice_id     Int    @id @default(autoincrement())
+    /// Invoice number (unique, e.g., "INV-0001")
     invoice_number String @unique
+    /// FK to Patient
     patient_id     Int
+    /// FK to Visit
     visit_id       Int
 
     // Totals (calculated)
+    /// Sum of all line item amounts before discounts
     gross_total     Decimal @default(0)
-    discount_type   String  @default("percentage") // "percentage" | "fixed"
+    /// Discount type: "percentage" or "fixed"
+    discount_type   String  @default("percentage")
+    /// Discount value (percentage or fixed amount)
     discount_value  Decimal @default(0)
-    discount_amount Decimal @default(0) // Calculated discount
+    /// Calculated discount amount in currency
+    discount_amount Decimal @default(0)
+    /// Calculated tax amount
     tax_amount      Decimal @default(0)
+    /// Final total after discounts and tax
     net_total       Decimal @default(0)
 
     // Additional fields
+    /// Applied coupon code (optional)
     coupon_code            String?
+    /// Calculated discount from coupon
     coupon_discount_amount Decimal   @default(0)
+    /// Reason for applying discount
     discount_reason        String?
+    /// Invoice issue date
     invoice_date           DateTime  @default(now())
+    /// Payment due date (optional)
     due_date               DateTime?
+    /// Additional invoice notes
     notes                  String?
 
-    status String @default("draft") // draft, sent, paid, cancelled
+    /// Invoice workflow status: "draft", "sent", "paid", "cancelled"
+    status String @default("draft")
 
-    // Audit fields
+    /// Timestamp when the record was created
     createdAt DateTime  @default(now())
+    /// User ID who created this record
     createdBy String?
+    /// Timestamp of last update
     updatedAt DateTime  @updatedAt
+    /// User ID who last updated this record
     updatedBy String?
+    /// Soft-delete timestamp (null = not deleted)
     deletedAt DateTime?
+    /// User ID who soft-deleted this record
     deletedBy String?
 
     // Relations
@@ -47,31 +70,46 @@ model Invoice {
     @@index([deletedAt])
 }
 
+/// InvoiceItem — Line item on an invoice
 model InvoiceItem {
+    /// Unique auto-incremented item identifier
     item_id    Int @id @default(autoincrement())
+    /// FK to parent Invoice
     invoice_id Int
 
-    // Item details
-    item_type    String // "drug" | "procedure" | "package" | "custom"
+    /// Item category: "drug", "procedure", "package", or "custom"
+    item_type    String
+    /// Display name of the item
     item_name    String
-    reference_id Int? // drug_id, procedure_id, etc.
+    /// FK to source master record (drug_id, procedure_id, etc.) — optional for custom items
+    reference_id Int?
 
     // Pricing
+    /// Quantity of this item
     quantity        Int     @default(1)
+    /// Unit price per item
     unit_amount     Decimal @default(0)
+    /// Premium/markup amount
     premium         Decimal @default(0)
-    discount_type   String  @default("percentage") // "percentage" | "fixed"
+    /// Line-item discount type: "percentage" or "fixed"
+    discount_type   String  @default("percentage")
+    /// Line-item discount value
     discount_value  Decimal @default(0)
+    /// Calculated line-item discount amount
     discount_amount Decimal @default(0)
+    /// Whether tax applies to this item
     tax_applicable  Boolean @default(false)
+    /// Calculated net amount for this line item
     net_amount      Decimal @default(0)
 
-    // Additional
+    /// Additional notes for this line item
     notes         String?
+    /// User/staff assigned to this item (optional)
     assigned_user String?
 
-    // Audit
+    /// Timestamp when the record was created
     createdAt DateTime @default(now())
+    /// Timestamp of last update
     updatedAt DateTime @updatedAt
 
     // Relations
@@ -82,24 +120,39 @@ model InvoiceItem {
     @@index([reference_id])
 }
 
+/// Receipt — Payment receipt against an invoice
 model Receipt {
+    /// Unique auto-incremented receipt identifier
     receipt_id     Int    @id @default(autoincrement())
+    /// Receipt number (unique, e.g., "RCP-0001")
     receipt_number String @unique
+    /// FK to Invoice this payment is for
     invoice_id     Int
+    /// FK to Patient
     patient_id     Int
 
+    /// Payment amount
     amount         Decimal
-    payment_method String // cash, card, upi, bank_transfer, other
+    /// Payment method: "cash", "card", "upi", "bank_transfer", "other"
+    payment_method String
+    /// Date and time of payment
     payment_date   DateTime @default(now())
+    /// Additional payment notes
     notes          String?
 
-    // Audit
+    /// Record status: 1 = active, 0 = inactive
     status    Int       @default(1)
+    /// Timestamp when the record was created
     createdAt DateTime  @default(now())
+    /// User ID who created this record
     createdBy String?
+    /// Timestamp of last update
     updatedAt DateTime  @updatedAt
+    /// User ID who last updated this record
     updatedBy String?
+    /// Soft-delete timestamp (null = not deleted)
     deletedAt DateTime?
+    /// User ID who soft-deleted this record
     deletedBy String?
 
     // Relations

@@ -6,6 +6,11 @@ import { prisma } from '../utils/prisma';
 export function requireGroupPermission(moduleId: string, subModuleAction?: string) {
     return async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
+            // Root users bypass all permission checks
+            if (req.user?.accountType === 'root') {
+                return next();
+            }
+
             if (!req.user?.groupId) {
                 throw new AppError('No group assigned', 403);
             }

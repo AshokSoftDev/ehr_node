@@ -1,38 +1,65 @@
+/// Appointment — Scheduled patient-doctor appointment
 model Appointment {
+  /// Unique auto-incremented appointment identifier
   appointment_id     Int      @id @default(autoincrement())
+  /// FK to Patient — the patient this appointment is for
   patient_id         Int
+  /// FK to Doctor — the attending doctor
   doctor_id          String
+  /// Date of the appointment
   appointment_date   DateTime
+  /// Scheduled start time
   start_time         DateTime
+  /// Scheduled end time
   end_time           DateTime
+  /// Duration in minutes (optional, derived from start/end)
   duration           Int?
+  /// Type of appointment (e.g., "Consultation", "Follow-up", "Procedure")
   appointment_type   String
+  /// Patient's reason for visiting
   reason_for_visit   String?
+  /// Workflow status (e.g., "scheduled", "checked_in", "completed", "cancelled")
   appointment_status String
+  /// Additional notes for the appointment
   notes              String?
-  // Snapshot fields (denormalized for reporting/search)
-  patient_mrn        String
-  patient_title      String
-  patient_firstName  String
-  patient_lastName   String
-  doctor_title       String
-  doctor_firstName   String
-  doctor_lastName    String
-  doctor_specialty   String
 
-  // Status & Audit
-  status    Int       @default(1) // 1=active, 0=inactive / cancelled
+  // Snapshot fields (denormalized for reporting/search)
+  /// Patient MRN snapshot at booking time
+  patient_mrn       String
+  /// Patient title snapshot (Mr/Mrs/Dr)
+  patient_title     String
+  /// Patient first name snapshot
+  patient_firstName String
+  /// Patient last name snapshot
+  patient_lastName  String
+  /// Doctor title snapshot
+  doctor_title      String
+  /// Doctor first name snapshot
+  doctor_firstName  String
+  /// Doctor last name snapshot
+  doctor_lastName   String
+  /// Doctor specialty snapshot
+  doctor_specialty  String
+
+  /// Record status: 1 = active, 0 = inactive/cancelled
+  status    Int       @default(1)
+  /// Timestamp when the record was created
   createdAt DateTime  @default(now())
+  /// User ID who created this record
   createdBy String?
+  /// Timestamp of last update
   updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
   updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
   deletedAt DateTime?
+  /// User ID who soft-deleted this record
   deletedBy String?
 
   // Relations
-  patient Patient @relation(fields: [patient_id], references: [patient_id])
-  doctor  Doctor  @relation(fields: [doctor_id], references: [id])
-  visits  Visit[]
+  patient       Patient         @relation(fields: [patient_id], references: [patient_id])
+  doctor        Doctor          @relation(fields: [doctor_id], references: [id])
+  visits        Visit[]
   clinicalNotes ClinicalNotes[]
   prescriptions Prescription[]
 

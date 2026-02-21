@@ -19,7 +19,7 @@ export class UserService {
 
     // Determine parent and account type
     let parentId: string | undefined;
-    let accountType = 'parent';
+    let accountType = 'root';
 
     if (currentUser) {
       // If created by a logged-in user
@@ -160,7 +160,7 @@ export class UserService {
     if (currentUser.userId === targetUser.userId) return true;
 
     // Parent users can access their children
-    if (currentUser.accountType === 'parent' && targetUser.parentId === currentUser.userId) return true;
+    if ((currentUser.accountType === 'root' || currentUser.accountType === 'parent') && targetUser.parentId === currentUser.userId) return true;
 
     // Child users can access users under same parent
     if (currentUser.accountType === 'child' && currentUser.parentId === targetUser.parentId) return true;
@@ -173,7 +173,7 @@ export class UserService {
     if (currentUser.userId === targetUser.userId) return true;
 
     // Parent users can modify their children
-    if (currentUser.accountType === 'parent' && targetUser.parentId === currentUser.userId) return true;
+    if ((currentUser.accountType === 'root' || currentUser.accountType === 'parent') && targetUser.parentId === currentUser.userId) return true;
 
     return false;
   }
@@ -186,8 +186,8 @@ export class UserService {
       appliedFilters.excludeRoot = true;
     }
 
-    if (currentUser.accountType === 'parent') {
-      // Parent sees only their children and themselves
+    if (currentUser.accountType === 'root' || currentUser.accountType === 'parent') {
+      // Root/Parent sees only their children and themselves
       appliedFilters.parentId = currentUser.userId;
     } else if (currentUser.accountType === 'child') {
       // Child sees only users under same parent
