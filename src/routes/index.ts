@@ -9,7 +9,7 @@ import appointmentRoutes from '../modules/appointments/appointment.routes';
 import masterRoutes from '../modules/master/master.routes';
 import billingRoutes from '../modules/billing/billing.routes';
 import aiChatRoutes from '../modules/ai/aiChat.routes';
-
+import dashboardRoutes from '../modules/dashboard/dashboard.routes';
 
 const router = Router();
 
@@ -23,7 +23,7 @@ router.use('/appointments', appointmentRoutes);
 router.use('/master', masterRoutes);
 router.use('/billing', billingRoutes);
 router.use('/ai-chat', aiChatRoutes);
-
+router.use('/dashboard', dashboardRoutes);
 
 export default router;
 

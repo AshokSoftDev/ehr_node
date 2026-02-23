@@ -64,6 +64,8 @@ export class PatientRepository {
                 OR: [
                     { mrn: { contains: search, mode: 'insensitive' } },
                     { mobileNumber: { contains: search, mode: 'insensitive' } },
+                    { firstName: { contains: search, mode: 'insensitive' } },
+                    { lastName: { contains: search, mode: 'insensitive' } },
                 ],
             }),
         };
