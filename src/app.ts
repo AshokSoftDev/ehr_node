@@ -6,7 +6,7 @@ import { errorHandler, notFound } from './middleware/error.middleware';
 import { env } from './config/env';
 
 const app = express();
-  
+
 // CORS configuration
 // app.use(cors({
 //     origin: env.CORS_ORIGIN || '*',
@@ -15,7 +15,7 @@ const app = express();
 
 // In your Node.js app
 app.use(cors({
-    origin: '*', 
+    origin: '*',
     // [
     //     'https://9000-firebase-ehrreactgit-1756347536195.cluster-44kx2eiocbhe2tyk3zoyo3ryuo.cloudworkstations.dev', 'http://localhost:5173'
     //     // Add any other origins you need
@@ -30,8 +30,8 @@ app.use(cors({
 app.use(helmet());
 
 // Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '150mb' }));
+app.use(express.urlencoded({ extended: true, limit: '150mb' }));
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
