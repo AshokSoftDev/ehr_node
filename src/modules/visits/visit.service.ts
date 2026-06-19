@@ -11,5 +11,9 @@ export class VisitService {
   getStatusCounts(filters: { date?: Date; doctorId?: string }) {
     return this.repo.getStatusCounts(filters);
   }
+
+  create(data: any) {
+    return this.repo.create(data);
+  }
 }
 

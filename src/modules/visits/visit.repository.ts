@@ -24,13 +24,26 @@ export class VisitRepository {
     const normalizedStatus = typeof status === 'string' && status !== '' ? Number(status) : undefined;
     const statusFilter = Number.isFinite(normalizedStatus) ? normalizedStatus : undefined;
 
+    let finalDateFrom: Date | undefined;
+    let finalDateTo: Date | undefined;
+
+    if (dateFrom) {
+      finalDateFrom = new Date(dateFrom);
+      finalDateFrom.setHours(0, 0, 0, 0);
+    }
+
+    if (dateTo) {
+      finalDateTo = new Date(dateTo);
+      finalDateTo.setHours(23, 59, 59, 999);
+    }
+
     const where: any = {
       ...(statusFilter !== undefined ? { status: statusFilter } : { status: 1 }),
-      ...(dateFrom || dateTo
+      ...(finalDateFrom || finalDateTo
         ? {
           visit_date: {
-            gte: dateFrom ?? undefined,
-            lte: dateTo ?? undefined,
+            gte: finalDateFrom ?? undefined,
+            lte: finalDateTo ?? undefined,
           },
         }
         : {}),
@@ -192,5 +205,23 @@ export class VisitRepository {
       postedToEHR,
       total: appointments.length,
     };
+  }
+
+  async create(data: Prisma.VisitUncheckedCreateInput) {
+    const client = prisma as any;
+    return client.visit.create({
+      data,
+      include: {
+        patient: {
+          select: {
+            patient_id: true,
+            mrn: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        doctor: { select: { id: true, displayName: true } },
+      },
+    });
   }
 }

@@ -7,6 +7,8 @@ import { env } from './config/env';
 
 const app = express();
 
+app.set('trust proxy', true);
+
 // CORS configuration
 // app.use(cors({
 //     origin: env.CORS_ORIGIN || '*',
@@ -27,7 +29,21 @@ app.use(cors({
 
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+    hsts: {
+        maxAge: 63072000,
+        includeSubDomains: true,
+        preload: true,
+    },
+}));
+
+// HTTP to HTTPS redirect in production
+app.use((req, res, next) => {
+    if (env.NODE_ENV === 'production' && req.headers['x-forwarded-proto'] !== 'https' && req.protocol !== 'https') {
+        return res.redirect(301, `https://${req.hostname}${req.originalUrl}`);
+    }
+    next();
+});
 
 // Body parsing middleware
 app.use(express.json({ limit: '150mb' }));

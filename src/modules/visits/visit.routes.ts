@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { validate } from '../../middleware/validate.middleware';
 import { VisitController } from './visit.controller';
-import { listVisitsSchema } from './visit.schema';
+import { listVisitsSchema, createVisitSchema } from './visit.schema';
 import { authenticate, requireModule } from '../../middleware/auth.middleware';
 import clinicalNoteRoutes from './clinical-notes/clinicalNote.routes';
 import prescriptionRoutes from './prescriptions/prescription.routes';
@@ -26,5 +26,8 @@ router.get('/status-counts', controller.getStatusCounts);
 
 // List visits with filters and pagination
 router.get('/', validate(listVisitsSchema), controller.list);
+
+// Create a new visit
+router.post('/', validate(createVisitSchema), controller.create);
 
 export default router;

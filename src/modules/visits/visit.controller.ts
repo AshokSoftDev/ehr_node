@@ -33,5 +33,15 @@ export class VisitController {
     const data = await this.service.getStatusCounts(filters);
     res.status(200).json({ status: 'success', data });
   });
+
+  create = catchAsync(async (req: AuthRequest, res: Response) => {
+    const data = {
+      ...req.body,
+      createdBy: req.user?.userId,
+      updatedBy: req.user?.userId,
+    };
+    const visit = await this.service.create(data);
+    res.status(201).json({ status: 'success', data: visit });
+  });
 }
 

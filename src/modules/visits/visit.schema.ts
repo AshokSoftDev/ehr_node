@@ -20,3 +20,14 @@ export const listVisitsSchema = z.object({
   }),
 });
 
+export const createVisitSchema = z.object({
+  body: z.object({
+    patient_id: z.number(),
+    doctor_id: z.string(),
+    visit_date: z.preprocess(toDate, z.date()),
+    visit_type: z.string(),
+    reason_for_visit: z.string().optional(),
+    location_id: z.number().optional(),
+  }),
+});
+
