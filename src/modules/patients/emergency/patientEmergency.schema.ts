@@ -6,6 +6,7 @@ const baseBody = {
   name: z.string().min(1),
   relation: z.string().min(1),
   contactNumber: z.string().regex(/^\d{10}$/, 'contactNumber must be 10 digits'),
+  isPrimary: z.boolean().optional(),
   status: z.number().int().optional(),
 };
 

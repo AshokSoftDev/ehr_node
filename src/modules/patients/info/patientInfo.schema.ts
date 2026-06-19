@@ -1,19 +1,19 @@
 import { z } from 'zod';
 
 const numericId = z.string().regex(/^\d+$/).transform(Number);
-const uuid = z.string().uuid({ message: 'primaryDoctorId must be a valid UUID' });
+const uuid = z.string().uuid({ message: 'primaryDoctorId must be a valid UUID' }).or(z.literal('')).transform(val => val === '' ? null : val);
 
 const payloadBase = {
-  bloodGroup: z.string().min(1),
-  overseas: z.boolean(),
-  passportNumber: z.string().optional(),
-  validityDate: z.coerce.date().optional(),
-  occupation: z.string().optional(),
-  department: z.string().optional(),
-  companyName: z.string().optional(),
-  designation: z.string().optional(),
-  employeeCode: z.string().optional(),
-  primaryDoctorId: uuid.optional(),
+  bloodGroup: z.string().optional().nullable(),
+  overseas: z.boolean().optional().nullable(),
+  passportNumber: z.string().optional().nullable(),
+  validityDate: z.coerce.date().optional().nullable(),
+  occupation: z.string().optional().nullable(),
+  department: z.string().optional().nullable(),
+  companyName: z.string().optional().nullable(),
+  designation: z.string().optional().nullable(),
+  employeeCode: z.string().optional().nullable(),
+  primaryDoctorId: uuid.optional().nullable(),
 };
 
 export const getPatientInfoSchema = z.object({

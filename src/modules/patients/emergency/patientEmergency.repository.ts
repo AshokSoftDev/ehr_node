@@ -32,4 +32,11 @@ export class PatientEmergencyRepository {
       data,
     });
   }
+
+  resetPrimary(patientId: number) {
+    return prisma.patientEmergency.updateMany({
+      where: { patient_id: patientId, isPrimary: true },
+      data: { isPrimary: false },
+    });
+  }
 }

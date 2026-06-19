@@ -35,7 +35,7 @@ export class PatientInfoService {
 
     return this.repo.update(patientId, {
       ...payload,
-      primaryDoctorId: payload.primaryDoctorId ?? existing.primaryDoctorId ?? null,
+      primaryDoctorId: payload.primaryDoctorId !== undefined ? payload.primaryDoctorId : existing.primaryDoctorId ?? null,
       updatedBy: userId ?? null,
     });
   }

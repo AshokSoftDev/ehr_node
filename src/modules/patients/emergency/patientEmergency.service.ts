@@ -21,6 +21,11 @@ export class PatientEmergencyService {
 
   async create(patientId: number, payload: PatientEmergencyPayload, userId?: string) {
     await this.ensurePatientActive(patientId);
+
+    if (payload.isPrimary) {
+      await this.repo.resetPrimary(patientId);
+    }
+
     return this.repo.create({
       ...payload,
       patient_id: patientId,
@@ -35,6 +40,10 @@ export class PatientEmergencyService {
     const existing = await this.repo.findById(peId);
     if (!existing || existing.status === 0 || existing.patient_id !== patientId) {
       throw new AppError('Emergency contact not found', 404);
+    }
+
+    if (payload.isPrimary) {
+      await this.repo.resetPrimary(patientId);
     }
 
     return this.repo.update(peId, {

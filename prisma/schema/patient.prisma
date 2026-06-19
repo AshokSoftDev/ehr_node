@@ -107,9 +107,9 @@ model PatientInfo {
   /// FK to Patient (unique — one record per patient)
   patient_id      Int       @unique
   /// Blood group (e.g., "A+", "O-", "AB+")
-  bloodGroup      String
+  bloodGroup      String?
   /// Whether the patient is an overseas/international patient
-  overseas        Boolean
+  overseas        Boolean?
   /// Passport number (for overseas patients)
   passportNumber  String?
   /// Passport validity date
@@ -161,6 +161,8 @@ model PatientEmergency {
   relation      String
   /// Emergency contact phone number
   contactNumber String
+  /// Indicates if this is the primary emergency contact
+  isPrimary     Boolean   @default(false)
   /// Record status: 1 = active, 0 = inactive
   status        Int       @default(1)
   /// Timestamp when the record was created
