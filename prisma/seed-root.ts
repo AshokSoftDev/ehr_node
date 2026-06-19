@@ -1,7 +1,12 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 const ROOT_EMAIL = 'root@admin.com';
 const ROOT_PASSWORD = 'Admin@123';
@@ -24,7 +29,7 @@ async function main() {
     where: { email: ROOT_EMAIL },
     update: {
       groupId: adminGroup.id,
-      accountType: 'parent',
+      accountType: 'root',
       parentId: null,
     },
     create: {
@@ -35,7 +40,7 @@ async function main() {
       email: ROOT_EMAIL,
       password: hashed,
       phoneNumber: '+1234567890',
-      accountType: 'parent',
+      accountType: 'root',
       parentId: null,
       groupId: adminGroup.id,
       userStatus: 1,

@@ -1,6 +1,11 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 type SeedModule = {
   name: string;
@@ -91,6 +96,52 @@ const seedModules: SeedModule[] = [
     name: 'Settings',
     description: 'Application settings',
     subModules: [{ name: 'VIEW', description: 'View settings' }],
+  },
+  {
+    name: 'Clinical Notes',
+    description: 'Manage clinical notes',
+    subModules: [
+      { name: 'VIEW', description: 'View clinical notes' },
+      { name: 'CREATE', description: 'Create clinical notes' },
+      { name: 'EDIT', description: 'Edit clinical notes' },
+      { name: 'DELETE', description: 'Delete clinical notes' },
+    ],
+  },
+  {
+    name: 'Billing',
+    description: 'Manage billing and invoices',
+    subModules: [
+      { name: 'VIEW', description: 'View bills and invoices' },
+      { name: 'CREATE', description: 'Create bills' },
+      { name: 'EDIT', description: 'Edit bills' },
+      { name: 'DELETE', description: 'Delete bills' },
+      { name: 'MANAGE_INVOICES', description: 'Generate and manage invoices' },
+    ],
+  },
+  {
+    name: 'Drug Master',
+    description: 'Manage drug directory',
+    subModules: [
+      { name: 'VIEW', description: 'View drugs' },
+      { name: 'CREATE', description: 'Create drugs' },
+      { name: 'EDIT', description: 'Edit drugs' },
+      { name: 'DELETE', description: 'Delete drugs' },
+    ],
+  },
+  {
+    name: 'Document Type Master',
+    description: 'Manage document types',
+    subModules: [
+      { name: 'VIEW', description: 'View document types' },
+      { name: 'CREATE', description: 'Create document types' },
+      { name: 'EDIT', description: 'Edit document types' },
+      { name: 'DELETE', description: 'Delete document types' },
+    ],
+  },
+  {
+    name: 'AI Chat',
+    description: 'AI Assistant features',
+    subModules: [{ name: 'VIEW', description: 'Access AI chat assistant' }],
   },
 ];
 

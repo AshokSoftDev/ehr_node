@@ -1,7 +1,12 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('🌱 Seeding database...');
@@ -28,7 +33,7 @@ async function main() {
       email: 'root@admin.com',
       password: hashedPassword,
       phoneNumber: '+1234567890',
-      accountType: 'parent',
+      accountType: 'root',
       userStatus: 1,
       // groupId is null for root user
       // parentId is null for root user
@@ -41,51 +46,6 @@ async function main() {
     fullName: rootUser.fullName,
   });
 
-  // Optionally, create a default admin group for the root user
-  const adminGroup = await prisma.group.create({
-    data: {
-      name: 'System Administrators',
-      description: 'Full system access group for administrators',
-      createdBy: rootUser.userId,
-    },
-  });
-
-  // Update root user with the admin group
-  await prisma.user.update({
-    where: { userId: rootUser.userId },
-    data: { groupId: adminGroup.id },
-  });
-
-  console.log('✅ Admin group created and assigned to root user');
-
-  // Grant all permissions to admin group
-  const modules = await prisma.module.findMany({
-    include: { subModules: true },
-  });
-
-  for (const module of modules) {
-    const modulePermission = await prisma.groupModulePermission.create({
-      data: {
-        groupId: adminGroup.id,
-        moduleId: module.id,
-        hasAccess: true,
-      },
-    });
-
-    // Grant all submodule permissions
-    if (module.subModules.length > 0) {
-      await prisma.groupSubModulePermission.createMany({
-        data: module.subModules.map(subModule => ({
-          groupId: adminGroup.id,
-          subModuleId: subModule.id,
-          allowed: true,
-          groupModulePermissionId: modulePermission.id,
-        })),
-      });
-    }
-  }
-
-  console.log('✅ All permissions granted to admin group');
 }
 
 main()
