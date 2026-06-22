@@ -24,6 +24,11 @@ export class ClinicalNoteRepository {
     return prisma.clinicalNotes.findMany({
       where: { visit_id: visitId, status: 1 },
       orderBy: { createdAt: 'desc' },
+      include: {
+        doctor: {
+          select: { id: true, displayName: true, specialty: true }
+        }
+      }
     });
   }
 

@@ -22,7 +22,7 @@ export class ClinicalNoteService {
       appointment_id: visit.appointment_id ?? null,
       visit_id: visit.visit_id,
       location_id: visit.location_id ?? null,
-      doctor_id: visit.doctor_id,
+      doctor_id: payload.doctor_id || visit.doctor_id,
       notes_type: payload.notes_type,
       createdBy: userId ?? null,
       updatedBy: userId ?? null,
@@ -72,7 +72,7 @@ export class ClinicalNoteService {
    * 3. Generates SOAP notes via AI
    * 4. Saves to both ai_notes (raw JSON) and editor_notes (formatted HTML)
    */
-  async createWithSoapNotes(visitId: number, file: Express.Multer.File, userId?: string) {
+  async createWithSoapNotes(visitId: number, file: Express.Multer.File, userId?: string, doctorId?: string) {
     const visit = await this.ensureVisitExists(visitId);
 
     const baseData = {
@@ -80,7 +80,7 @@ export class ClinicalNoteService {
       appointment_id: visit.appointment_id ?? null,
       visit_id: visit.visit_id,
       location_id: visit.location_id ?? null,
-      doctor_id: visit.doctor_id,
+      doctor_id: doctorId || visit.doctor_id,
       notes_type: 'audio' as const,
       createdBy: userId ?? null,
       updatedBy: userId ?? null,
@@ -209,6 +209,7 @@ export class ClinicalNoteService {
 
     return this.repo.update(note.cn_id, {
       editor_notes: editorNotes,
+      ...(payload.doctor_id && { doctor_id: payload.doctor_id }),
       updatedBy: userId ?? null,
     });
   }

@@ -11,6 +11,7 @@ export const createClinicalNoteSchema = z.object({
   body: z.object({
     notes_type: notesTypeEnum,
     editor_notes: z.string().optional(),
+    doctor_id: z.string().optional(),
   }).superRefine((body, ctx) => {
     if (body.notes_type === 'text' && (!body.editor_notes || body.editor_notes.trim() === '')) {
       ctx.addIssue({
@@ -29,6 +30,7 @@ export const updateClinicalNoteSchema = z.object({
   }),
   body: z.object({
     editor_notes: z.string().min(1, 'editor_notes is required'),
+    doctor_id: z.string().optional(),
   }),
 });
 

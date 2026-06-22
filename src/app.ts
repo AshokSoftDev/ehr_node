@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import path from 'path';
 import routes from './routes';
 import { errorHandler, notFound } from './middleware/error.middleware';
 import { env } from './config/env';
@@ -27,6 +28,8 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+// Serve audio files statically
+app.use('/audios', express.static(path.join(process.cwd(), 'audios')));
 
 // Security middleware
 app.use(helmet({

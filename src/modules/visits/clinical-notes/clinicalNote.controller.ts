@@ -49,7 +49,7 @@ export class ClinicalNoteController {
       res.status(400).json({ status: 'error', message: 'Audio file is required' });
       return;
     }
-    const data = await this.service.createWithSoapNotes(visitId, req.file, req.user?.userId);
+    const data = await this.service.createWithSoapNotes(visitId, req.file, req.user?.userId, req.body.doctor_id);
     res.status(201).json({ status: 'success', data });
   });
 }
