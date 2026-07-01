@@ -1,6 +1,6 @@
-// Billing Models: Invoice, InvoiceItem, Receipt
+// Billing Models: Invoice, InvoiceItem, Receipt, PatientAdvance
 
-/// Invoice — Billing invoice for a patient visit
+/// Invoice — Billing invoice for a patient (optionally tied to a visit)
 model Invoice {
     /// Unique auto-incremented invoice identifier
     invoice_id     Int    @id @default(autoincrement())
@@ -8,8 +8,8 @@ model Invoice {
     invoice_number String @unique
     /// FK to Patient
     patient_id     Int
-    /// FK to Visit
-    visit_id       Int
+    /// FK to Visit (optional — invoices can exist without a visit)
+    visit_id       Int?
 
     // Totals (calculated)
     /// Sum of all line item amounts before discounts
@@ -24,6 +24,10 @@ model Invoice {
     tax_amount      Decimal @default(0)
     /// Final total after discounts and tax
     net_total       Decimal @default(0)
+    /// Total amount paid so far (sum of all receipts/payments)
+    paid_amount     Decimal @default(0)
+    /// Remaining balance (net_total - paid_amount)
+    balance_amount  Decimal @default(0)
 
     // Additional fields
     /// Applied coupon code (optional)
@@ -39,7 +43,7 @@ model Invoice {
     /// Additional invoice notes
     notes                  String?
 
-    /// Invoice workflow status: "draft", "sent", "paid", "cancelled"
+    /// Invoice workflow status: "draft", "sent", "partial", "paid", "cancelled"
     status String @default("draft")
 
     /// Timestamp when the record was created
@@ -57,7 +61,7 @@ model Invoice {
 
     // Relations
     patient  Patient       @relation(fields: [patient_id], references: [patient_id])
-    visit    Visit         @relation(fields: [visit_id], references: [visit_id])
+    visit    Visit?        @relation(fields: [visit_id], references: [visit_id])
     items    InvoiceItem[]
     receipts Receipt[]
 
@@ -120,14 +124,14 @@ model InvoiceItem {
     @@index([reference_id])
 }
 
-/// Receipt — Payment receipt against an invoice
+/// Receipt — Payment receipt (against an invoice or standalone for advance deposits)
 model Receipt {
     /// Unique auto-incremented receipt identifier
     receipt_id     Int    @id @default(autoincrement())
     /// Receipt number (unique, e.g., "RCP-0001")
     receipt_number String @unique
-    /// FK to Invoice this payment is for
-    invoice_id     Int
+    /// FK to Invoice this payment is for (optional — advance deposits have no invoice)
+    invoice_id     Int?
     /// FK to Patient
     patient_id     Int
 
@@ -135,6 +139,8 @@ model Receipt {
     amount         Decimal
     /// Payment method: "cash", "card", "upi", "bank_transfer", "other"
     payment_method String
+    /// Receipt type: "payment", "advance_deposit", "advance_deduction"
+    receipt_type   String   @default("payment")
     /// Date and time of payment
     payment_date   DateTime @default(now())
     /// Additional payment notes
@@ -156,14 +162,59 @@ model Receipt {
     deletedBy String?
 
     // Relations
-    invoice Invoice @relation(fields: [invoice_id], references: [invoice_id])
-    patient Patient @relation(fields: [patient_id], references: [patient_id])
+    invoice Invoice? @relation(fields: [invoice_id], references: [invoice_id])
+    patient Patient  @relation(fields: [patient_id], references: [patient_id])
 
     @@index([invoice_id])
     @@index([patient_id])
     @@index([receipt_number])
+    @@index([receipt_type])
     @@index([status])
     @@index([payment_date])
+    @@index([createdAt])
+    @@index([deletedAt])
+}
+
+/// PatientAdvance — Tracks advance deposits and deductions for patient wallet
+model PatientAdvance {
+    /// Unique auto-incremented identifier
+    advance_id       Int      @id @default(autoincrement())
+    /// FK to Patient
+    patient_id       Int
+    /// Transaction amount (positive = deposit, negative = deduction)
+    amount           Decimal
+    /// Transaction type: "deposit" or "deduction"
+    transaction_type String
+    /// Reference type: "invoice", "manual", or null
+    reference_type   String?
+    /// Reference ID (e.g., invoice_id if deducted against an invoice)
+    reference_id     Int?
+    /// Payment method used for this transaction
+    payment_method   String?
+    /// Link to the receipt if one was generated
+    receipt_id       Int?
+    /// Additional notes
+    notes            String?
+
+    /// Record status: 1 = active, 0 = inactive
+    status    Int       @default(1)
+    /// Timestamp when the record was created
+    createdAt DateTime  @default(now())
+    /// User ID who created this record
+    createdBy String?
+    /// Timestamp of last update
+    updatedAt DateTime  @updatedAt
+    /// Soft-delete timestamp (null = not deleted)
+    deletedAt DateTime?
+    /// User ID who soft-deleted this record
+    deletedBy String?
+
+    // Relations
+    patient Patient @relation(fields: [patient_id], references: [patient_id])
+
+    @@index([patient_id])
+    @@index([transaction_type])
+    @@index([status])
     @@index([createdAt])
     @@index([deletedAt])
 }

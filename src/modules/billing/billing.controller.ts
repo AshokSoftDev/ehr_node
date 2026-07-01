@@ -9,7 +9,12 @@ import {
   receiptFiltersSchema,
   idParamSchema,
   visitIdParamSchema,
+  patientIdParamSchema,
+  invoiceIdParamSchema,
   billingVisitsFiltersSchema,
+  createAdvanceSchema,
+  advanceFiltersSchema,
+  createPaymentSchema,
 } from './billing.schema';
 
 export const billingController = {
@@ -143,5 +148,75 @@ export const billingController = {
       next(error);
     }
   },
-};
 
+  // ============================================
+  // Advance / Wallet Controllers
+  // ============================================
+
+  async depositAdvance(req: Request, res: Response, next: NextFunction) {
+    try {
+      const validated = createAdvanceSchema.parse(req.body);
+      const createdBy = req.user?.userId;
+      const result = await billingService.depositAdvance(validated, createdBy);
+      res.status(201).json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getAdvanceBalance(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { patientId } = patientIdParamSchema.parse(req.params);
+      const result = await billingService.getAdvanceBalance(patientId);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getAdvanceLedger(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { patientId } = patientIdParamSchema.parse(req.params);
+      const filters = advanceFiltersSchema.parse(req.query);
+      const result = await billingService.getAdvanceLedger(patientId, filters);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // ============================================
+  // Payment Controllers
+  // ============================================
+
+  async createPayment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const validated = createPaymentSchema.parse(req.body);
+      const createdBy = req.user?.userId;
+      const result = await billingService.createPayment(validated, createdBy);
+      res.status(201).json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getPatientPendingInvoices(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { patientId } = patientIdParamSchema.parse(req.params);
+      const result = await billingService.getPatientPendingInvoices(patientId);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getInvoicePayments(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { invoiceId } = invoiceIdParamSchema.parse(req.params);
+      const result = await billingService.getInvoicePayments(invoiceId);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+};

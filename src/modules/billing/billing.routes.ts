@@ -10,6 +10,9 @@ router.get('/invoices/:id', billingController.getInvoice);
 router.put('/invoices/:id', billingController.updateInvoice);
 router.delete('/invoices/:id', billingController.deleteInvoice);
 
+// Pending invoices for a patient
+router.get('/invoices/patient/:patientId/pending', billingController.getPatientPendingInvoices);
+
 // Visit prescriptions for invoice
 router.get('/visits/:visitId/prescriptions-for-invoice', billingController.getVisitPrescriptionsForInvoice);
 
@@ -22,5 +25,14 @@ router.get('/receipts', billingController.listReceipts);
 router.get('/receipts/:id', billingController.getReceipt);
 router.put('/receipts/:id', billingController.updateReceipt);
 router.delete('/receipts/:id', billingController.deleteReceipt);
+
+// Advance / Wallet routes
+router.post('/advance', billingController.depositAdvance);
+router.get('/advance/balance/:patientId', billingController.getAdvanceBalance);
+router.get('/advance/ledger/:patientId', billingController.getAdvanceLedger);
+
+// Payment routes (partial payments from invoice page)
+router.post('/payments', billingController.createPayment);
+router.get('/payments/invoice/:invoiceId', billingController.getInvoicePayments);
 
 export default router;

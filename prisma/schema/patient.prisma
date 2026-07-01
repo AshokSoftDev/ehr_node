@@ -59,6 +59,7 @@ model Patient {
   dentalHPIs       DentalHPI[]
   invoices         Invoice[]
   receipts         Receipt[]
+  advances         PatientAdvance[]
 }
 
 /// PatientAllergy — Records a patient's allergy information

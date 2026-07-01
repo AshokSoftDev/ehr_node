@@ -21,7 +21,7 @@ export interface UpdateInvoiceItemDto extends Partial<CreateInvoiceItemDto> {
 
 export interface CreateInvoiceDto {
   patient_id: number;
-  visit_id: number;
+  visit_id?: number; // Optional — invoices can exist without a visit
   items: CreateInvoiceItemDto[];
   discount_type?: 'percentage' | 'fixed';
   discount_value?: number;
@@ -41,7 +41,7 @@ export interface UpdateInvoiceDto {
   invoice_date?: Date;
   due_date?: Date;
   notes?: string;
-  status?: 'draft' | 'sent' | 'paid' | 'cancelled';
+  status?: 'draft' | 'sent' | 'partial' | 'paid' | 'cancelled';
 }
 
 export interface InvoiceFilters {
@@ -56,10 +56,11 @@ export interface InvoiceFilters {
 }
 
 export interface CreateReceiptDto {
-  invoice_id: number;
+  invoice_id?: number; // Optional — advance deposits have no invoice
   patient_id: number;
   amount: number;
   payment_method: 'cash' | 'card' | 'upi' | 'bank_transfer' | 'other';
+  receipt_type?: 'payment' | 'advance_deposit' | 'advance_deduction';
   payment_date?: Date;
   notes?: string;
 }
@@ -75,6 +76,7 @@ export interface ReceiptFilters {
   invoice_id?: number;
   patient_id?: number;
   payment_method?: string;
+  receipt_type?: string;
   from_date?: string;
   to_date?: string;
   search?: string;
@@ -120,3 +122,28 @@ export interface BillingVisitsFilters {
   limit?: number;
 }
 
+// Advance / Wallet types
+export interface CreateAdvanceDto {
+  patient_id: number;
+  amount: number;
+  payment_method: 'cash' | 'card' | 'upi' | 'bank_transfer' | 'other';
+  notes?: string;
+}
+
+export interface AdvanceFilters {
+  patient_id?: number;
+  transaction_type?: 'deposit' | 'deduction';
+  page?: number;
+  limit?: number;
+}
+
+// Payment types (for partial payments from invoice page)
+export interface CreatePaymentDto {
+  invoice_id: number;
+  patient_id: number;
+  amount: number;
+  payment_method: 'cash' | 'card' | 'upi' | 'bank_transfer' | 'other';
+  from_advance?: number; // Amount to deduct from advance wallet
+  payment_date?: Date;
+  notes?: string;
+}

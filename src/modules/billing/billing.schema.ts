@@ -20,10 +20,10 @@ export const updateInvoiceItemSchema = invoiceItemSchema.partial().extend({
   item_id: z.number().int().positive().optional(),
 });
 
-// Create Invoice Schema
+// Create Invoice Schema — visit_id is now optional
 export const createInvoiceSchema = z.object({
   patient_id: z.number().int().positive('Patient ID is required'),
-  visit_id: z.number().int().positive('Visit ID is required'),
+  visit_id: z.number().int().positive().optional(),
   items: z.array(invoiceItemSchema).min(1, 'At least one item is required'),
   discount_type: z.enum(['percentage', 'fixed']).default('percentage'),
   discount_value: z.number().nonnegative().default(0),
@@ -44,7 +44,7 @@ export const updateInvoiceSchema = z.object({
   invoice_date: z.coerce.date().optional(),
   due_date: z.coerce.date().optional(),
   notes: z.string().optional(),
-  status: z.enum(['draft', 'sent', 'paid', 'cancelled']).optional(),
+  status: z.enum(['draft', 'sent', 'partial', 'paid', 'cancelled']).optional(),
 });
 
 // Invoice Filters Schema
@@ -59,12 +59,13 @@ export const invoiceFiltersSchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
 });
 
-// Create Receipt Schema
+// Create Receipt Schema — invoice_id is now optional
 export const createReceiptSchema = z.object({
-  invoice_id: z.number().int().positive('Invoice ID is required'),
+  invoice_id: z.number().int().positive().optional(),
   patient_id: z.number().int().positive('Patient ID is required'),
   amount: z.number().positive('Amount must be greater than 0'),
   payment_method: z.enum(['cash', 'card', 'upi', 'bank_transfer', 'other']),
+  receipt_type: z.enum(['payment', 'advance_deposit', 'advance_deduction']).default('payment'),
   payment_date: z.coerce.date().optional(),
   notes: z.string().optional(),
 });
@@ -82,6 +83,7 @@ export const receiptFiltersSchema = z.object({
   invoice_id: z.coerce.number().int().positive().optional(),
   patient_id: z.coerce.number().int().positive().optional(),
   payment_method: z.string().optional(),
+  receipt_type: z.string().optional(),
   from_date: z.string().optional(),
   to_date: z.string().optional(),
   search: z.string().optional(),
@@ -98,10 +100,44 @@ export const visitIdParamSchema = z.object({
   visitId: z.coerce.number().int().positive(),
 });
 
+export const patientIdParamSchema = z.object({
+  patientId: z.coerce.number().int().positive(),
+});
+
+export const invoiceIdParamSchema = z.object({
+  invoiceId: z.coerce.number().int().positive(),
+});
+
 // Billing Visits Filters Schema (consolidated endpoint)
 export const billingVisitsFiltersSchema = z.object({
   search: z.string().optional(),
   status: z.string().default('1'),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(15),
+});
+
+// Advance / Wallet Schemas
+export const createAdvanceSchema = z.object({
+  patient_id: z.number().int().positive('Patient ID is required'),
+  amount: z.number().positive('Amount must be greater than 0'),
+  payment_method: z.enum(['cash', 'card', 'upi', 'bank_transfer', 'other']),
+  notes: z.string().optional(),
+});
+
+export const advanceFiltersSchema = z.object({
+  patient_id: z.coerce.number().int().positive().optional(),
+  transaction_type: z.enum(['deposit', 'deduction']).optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+});
+
+// Payment Schema (for partial payments from invoice page)
+export const createPaymentSchema = z.object({
+  invoice_id: z.number().int().positive('Invoice ID is required'),
+  patient_id: z.number().int().positive('Patient ID is required'),
+  amount: z.number().nonnegative('Amount must be 0 or greater'),
+  payment_method: z.enum(['cash', 'card', 'upi', 'bank_transfer', 'other']),
+  from_advance: z.number().nonnegative().default(0),
+  payment_date: z.coerce.date().optional(),
+  notes: z.string().optional(),
 });

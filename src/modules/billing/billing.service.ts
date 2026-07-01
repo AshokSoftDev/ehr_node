@@ -10,6 +10,9 @@ import type {
   CalculatedInvoice,
   CreateInvoiceItemDto,
   BillingVisitsFilters,
+  CreateAdvanceDto,
+  AdvanceFilters,
+  CreatePaymentDto,
 } from './billing.types';
 
 // Tax rate configuration (can be moved to env or config)
@@ -119,7 +122,7 @@ export const billingService = {
 
 
   /**
-   * Create invoice with items
+   * Create invoice with items (visit_id is now optional)
    */
   async createInvoice(dto: CreateInvoiceDto, createdBy?: string) {
     // Generate invoice number
@@ -133,11 +136,10 @@ export const billingService = {
       dto.coupon_code
     );
 
-    // Create invoice
-    const invoice = await billingRepository.createInvoice({
+    // Build the data object — visit connection is optional
+    const data: any = {
       invoice_number: invoiceNumber,
       patient: { connect: { patient_id: dto.patient_id } },
-      visit: { connect: { visit_id: dto.visit_id } },
       gross_total: calculated.gross_total,
       discount_type: calculated.discount_type,
       discount_value: calculated.discount_value,
@@ -146,6 +148,7 @@ export const billingService = {
       coupon_discount_amount: calculated.coupon_discount_amount,
       tax_amount: calculated.tax_amount,
       net_total: calculated.net_total,
+      balance_amount: calculated.net_total, // Initially, balance = net_total
       discount_reason: dto.discount_reason,
       invoice_date: dto.invoice_date ?? new Date(),
       due_date: dto.due_date,
@@ -168,7 +171,15 @@ export const billingService = {
           assigned_user: item.assigned_user,
         })),
       },
-    });
+    };
+
+    // Only connect visit if visit_id is provided
+    if (dto.visit_id) {
+      data.visit = { connect: { visit_id: dto.visit_id } };
+    }
+
+    // Create invoice
+    const invoice = await billingRepository.createInvoice(data);
 
     return invoice;
   },
@@ -201,12 +212,10 @@ export const billingService = {
       throw new Error('Invoice not found');
     }
 
-    // Check if invoice has receipts - if so, cannot update
-    const receipts = await billingRepository.findReceipts({ invoice_id: id });
-    if (receipts.receipts.length > 0) {
-      throw new Error('Cannot update invoice - receipt has already been generated');
+    // Check if invoice is fully paid — if so, cannot update
+    if (existing.status === 'paid') {
+      throw new Error('Cannot update invoice — it is already fully paid');
     }
-
 
     // If items are being updated, recalculate totals
     if (dto.items && dto.items.length > 0) {
@@ -220,6 +229,9 @@ export const billingService = {
         dto.discount_value ?? Number(existing.discount_value),
         dto.coupon_code ?? existing.coupon_code ?? undefined
       );
+
+      const paidAmount = Number(existing.paid_amount ?? 0);
+      const balanceAmount = Math.max(0, calculated.net_total - paidAmount);
  
       // Update invoice with new items
       return billingRepository.updateInvoice(id, {
@@ -231,6 +243,7 @@ export const billingService = {
         coupon_discount_amount: calculated.coupon_discount_amount,
         tax_amount: calculated.tax_amount,
         net_total: calculated.net_total,
+        balance_amount: balanceAmount,
         discount_reason: dto.discount_reason,
         invoice_date: dto.invoice_date,
         due_date: dto.due_date,
@@ -301,29 +314,38 @@ export const billingService = {
     }));
   },
 
+  // ============================================
   // Receipt operations
+  // ============================================
+
   /**
-   * Create receipt
+   * Create receipt (no longer auto-marks invoice as paid)
    */
   async createReceipt(dto: CreateReceiptDto, createdBy?: string) {
     const receiptNumber = await billingRepository.generateReceiptNumber();
 
-    const receipt = await billingRepository.createReceipt({
+    const data: any = {
       receipt_number: receiptNumber,
-      invoice: { connect: { invoice_id: dto.invoice_id } },
       patient: { connect: { patient_id: dto.patient_id } },
       amount: dto.amount,
       payment_method: dto.payment_method,
+      receipt_type: dto.receipt_type ?? 'payment',
       payment_date: dto.payment_date ?? new Date(),
       notes: dto.notes,
       createdBy,
-    });
+    };
 
-    // Auto-mark invoice as paid
-    await billingRepository.updateInvoice(dto.invoice_id, {
-      status: 'paid',
-      updatedBy: createdBy,
-    });
+    // Only connect invoice if invoice_id is provided
+    if (dto.invoice_id) {
+      data.invoice = { connect: { invoice_id: dto.invoice_id } };
+    }
+
+    const receipt = await billingRepository.createReceipt(data);
+
+    // If this receipt is for an invoice, recalculate the invoice's paid amounts
+    if (dto.invoice_id) {
+      await billingRepository.updateInvoicePaidAmount(dto.invoice_id);
+    }
 
     return receipt;
   },
@@ -380,5 +402,168 @@ export const billingService = {
    */
   async listBillingVisits(filters: BillingVisitsFilters) {
     return billingRepository.findBillingVisits(filters);
+  },
+
+  // ============================================
+  // Advance / Wallet operations
+  // ============================================
+
+  /**
+   * Deposit advance amount for a patient
+   */
+  async depositAdvance(dto: CreateAdvanceDto, createdBy?: string) {
+    // Create advance record (positive amount = deposit)
+    const advance = await billingRepository.createAdvance({
+      patient: { connect: { patient_id: dto.patient_id } },
+      amount: dto.amount,
+      transaction_type: 'deposit',
+      payment_method: dto.payment_method,
+      notes: dto.notes,
+      createdBy,
+    });
+
+    // Also create a receipt for the advance deposit
+    const receiptNumber = await billingRepository.generateReceiptNumber();
+    await billingRepository.createReceipt({
+      receipt_number: receiptNumber,
+      patient: { connect: { patient_id: dto.patient_id } },
+      amount: dto.amount,
+      payment_method: dto.payment_method,
+      receipt_type: 'advance_deposit',
+      notes: dto.notes || `Advance deposit`,
+      createdBy,
+    });
+
+    // Return the advance with updated balance
+    const balance = await billingRepository.getAdvanceBalance(dto.patient_id);
+
+    return {
+      advance,
+      balance,
+    };
+  },
+
+  /**
+   * Get advance balance for a patient
+   */
+  async getAdvanceBalance(patientId: number) {
+    const balance = await billingRepository.getAdvanceBalance(patientId);
+    return { patient_id: patientId, balance };
+  },
+
+  /**
+   * Get advance ledger (paginated transactions)
+   */
+  async getAdvanceLedger(patientId: number, filters: AdvanceFilters) {
+    return billingRepository.findAdvances(patientId, filters);
+  },
+
+  // ============================================
+  // Payment operations (from invoice page)
+  // ============================================
+
+  /**
+   * Create payment against an invoice (supports partial payment + advance deduction)
+   */
+  async createPayment(dto: CreatePaymentDto, createdBy?: string) {
+    const invoice = await billingRepository.findInvoiceById(dto.invoice_id);
+    if (!invoice) {
+      throw new Error('Invoice not found');
+    }
+
+    if (invoice.status === 'paid') {
+      throw new Error('Invoice is already fully paid');
+    }
+
+    const totalPayment = dto.amount + (dto.from_advance ?? 0);
+    const invoiceBalance = Number(invoice.balance_amount);
+
+    if (totalPayment > invoiceBalance) {
+      throw new Error(`Payment amount (₹${totalPayment}) exceeds invoice balance (₹${invoiceBalance})`);
+    }
+
+    const results: any = {
+      receipts: [],
+      advance_deduction: null,
+    };
+
+    // 1. If paying from advance, create advance deduction
+    if (dto.from_advance && dto.from_advance > 0) {
+      // Check advance balance
+      const advanceBalance = await billingRepository.getAdvanceBalance(dto.patient_id);
+      if (dto.from_advance > advanceBalance) {
+        throw new Error(`Insufficient advance balance. Available: ₹${advanceBalance}`);
+      }
+
+      // Create advance deduction record (negative amount)
+      const deduction = await billingRepository.createAdvance({
+        patient: { connect: { patient_id: dto.patient_id } },
+        amount: -dto.from_advance, // Negative = deduction
+        transaction_type: 'deduction',
+        reference_type: 'invoice',
+        reference_id: dto.invoice_id,
+        notes: dto.notes || `Deducted against invoice`,
+        createdBy,
+      });
+
+      results.advance_deduction = deduction;
+
+      // Create a receipt for the advance deduction against the invoice
+      const receiptNumber = await billingRepository.generateReceiptNumber();
+      const advanceReceipt = await billingRepository.createReceipt({
+        receipt_number: receiptNumber,
+        invoice: { connect: { invoice_id: dto.invoice_id } },
+        patient: { connect: { patient_id: dto.patient_id } },
+        amount: dto.from_advance,
+        payment_method: 'other',
+        receipt_type: 'advance_deduction',
+        payment_date: dto.payment_date ?? new Date(),
+        notes: `Paid from advance`,
+        createdBy,
+      });
+
+      results.receipts.push(advanceReceipt);
+    }
+
+    // 2. If paying cash/card/upi, create a regular receipt
+    if (dto.amount > 0) {
+      const receiptNumber = await billingRepository.generateReceiptNumber();
+      const paymentReceipt = await billingRepository.createReceipt({
+        receipt_number: receiptNumber,
+        invoice: { connect: { invoice_id: dto.invoice_id } },
+        patient: { connect: { patient_id: dto.patient_id } },
+        amount: dto.amount,
+        payment_method: dto.payment_method,
+        receipt_type: 'payment',
+        payment_date: dto.payment_date ?? new Date(),
+        notes: dto.notes,
+        createdBy,
+      });
+
+      results.receipts.push(paymentReceipt);
+    }
+
+    // 3. Recalculate invoice paid amounts and status
+    const updatedInvoice = await billingRepository.updateInvoicePaidAmount(dto.invoice_id);
+    results.invoice = updatedInvoice;
+
+    // 4. Get updated advance balance
+    results.advance_balance = await billingRepository.getAdvanceBalance(dto.patient_id);
+
+    return results;
+  },
+
+  /**
+   * Get pending invoices for a patient
+   */
+  async getPatientPendingInvoices(patientId: number) {
+    return billingRepository.findPendingInvoicesByPatient(patientId);
+  },
+
+  /**
+   * Get all payments for an invoice
+   */
+  async getInvoicePayments(invoiceId: number) {
+    return billingRepository.findPaymentsByInvoice(invoiceId);
   },
 };
