@@ -13,7 +13,15 @@ export class AppointmentRepository {
           { lastName: { contains: search, mode: 'insensitive' } },
         ],
       },
-      select: { patient_id: true, mrn: true, firstName: true, lastName: true },
+      select: { 
+        patient_id: true, 
+        mrn: true, 
+        firstName: true, 
+        lastName: true,
+        patientInfo: {
+          select: { primaryDoctorId: true }
+        }
+      },
       take: 20,
     });
   }

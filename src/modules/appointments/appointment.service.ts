@@ -51,28 +51,29 @@ export class AppointmentService {
       updatedBy: userId,
     });
 
-    // Create a corresponding Visit record for this appointment.
-    // Uses appointment_date as visit_date and mirrors key fields.
-    try {
-      await (prisma as any).visit.create({
-        data: {
-          appointment_id: appointment.appointment_id,
-          patient_id: appointment.patient_id,
-          visit_date: appointment.appointment_date,
-          location_id: null,
-          doctor_id: appointment.doctor_id,
-          visit_type: appointment.appointment_type,
-          reason_for_visit: appointment.reason_for_visit,
-          status: 1,
-          createdBy: userId,
-          updatedBy: userId,
-        },
-      });
-    } catch (error) {
-      // Swallow visit creation errors to avoid breaking appointment creation.
-      // Log to console for debugging; can be replaced with structured logging.
-      // eslint-disable-next-line no-console
-      console.error('Failed to create Visit for appointment', error);
+    // Create a corresponding Visit record for this appointment only if status is WITH DOCTOR.
+    if (statusUpper === 'WITH DOCTOR') {
+      try {
+        await (prisma as any).visit.create({
+          data: {
+            appointment_id: appointment.appointment_id,
+            patient_id: appointment.patient_id,
+            visit_date: appointment.appointment_date,
+            location_id: null,
+            doctor_id: appointment.doctor_id,
+            visit_type: appointment.appointment_type,
+            reason_for_visit: appointment.reason_for_visit,
+            status: 1,
+            createdBy: userId,
+            updatedBy: userId,
+          },
+        });
+      } catch (error) {
+        // Swallow visit creation errors to avoid breaking appointment creation.
+        // Log to console for debugging; can be replaced with structured logging.
+        // eslint-disable-next-line no-console
+        console.error('Failed to create Visit for appointment', error);
+      }
     }
 
     return appointment;
@@ -91,6 +92,22 @@ export class AppointmentService {
     if (!doctor || (doctor as any).status === 0) throw new AppError('Doctor not found', 404);
 
     const nextStatus = dto.appointment_status ? dto.appointment_status.toUpperCase() : undefined;
+    const currentStatus = exists.appointment_status?.toUpperCase() || 'SCHEDULED';
+
+    if (nextStatus && nextStatus !== currentStatus) {
+      const allowedTransitions: Record<string, string[]> = {
+        'SCHEDULED': ['CONFIRMED', 'CANCELLED', 'NO-SHOW', 'RESCHEDULED'],
+        'CONFIRMED': ['CHECKED-IN', 'NO-SHOW', 'CANCELLED', 'RESCHEDULED'],
+        'CHECKED-IN': ['WITH DOCTOR', 'NO-SHOW'],
+        'WITH DOCTOR': ['CHECKED-OUT'],
+        'RESCHEDULED': ['CONFIRMED', 'CANCELLED', 'NO-SHOW'],
+      };
+      
+      const validNextStatuses = allowedTransitions[currentStatus] || [];
+      if (!validNextStatuses.includes(nextStatus)) {
+        throw new AppError(`Cannot change appointment status from ${currentStatus} to ${nextStatus}`, 400);
+      }
+    }
 
     const snap: AppointmentSnapshot = {
       patient_mrn: patient.mrn,
