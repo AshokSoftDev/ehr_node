@@ -2,13 +2,13 @@ import { z } from 'zod';
 
 export const createPatientSchema = z.object({
     body: z.object({
-        title: z.string().min(1, 'Title is required'),
-        firstName: z.string().min(1, 'First name is required'),
-        lastName: z.string().min(1, 'Last name is required'),
+        title: z.string({ message: 'Title is required' }).min(1, 'Title is required'),
+        firstName: z.string({ message: 'First name is required' }).min(1, 'First name is required'),
+        lastName: z.string().optional(),
         dateOfBirth: z.string().or(z.date()).transform((val) => new Date(val)).optional(),
         age: z.number().int().optional(),
-        gender: z.string().min(1, 'Gender is required'),
-        mobileNumber: z.string().regex(/^\d{10}$/, 'Invalid mobile number'),
+        gender: z.string({ message: 'Gender is required' }).min(1, 'Gender is required'),
+        mobileNumber: z.string({ message: 'Mobile number is required' }).regex(/^\d{10}$/, 'Invalid mobile number'),
         address: z.string().optional(),
         area: z.string().optional(),
         city: z.string().optional(),
@@ -36,7 +36,7 @@ export const updatePatientSchema = z.object({
     body: z.object({
         title: z.string().min(1).optional(),
         firstName: z.string().min(1).optional(),
-        lastName: z.string().min(1).optional(),
+        lastName: z.string().optional(),
         dateOfBirth: z.string().or(z.date()).transform((val) => val ? new Date(val) : undefined).optional(),
         age: z.number().int().optional(),
         gender: z.string().min(1).optional(),
