@@ -20,6 +20,10 @@ model Appointment {
   reason_for_visit   String?
   /// Workflow status (e.g., "scheduled", "checked_in", "completed", "cancelled")
   appointment_status String
+  /// Reason for cancellation if the appointment is cancelled
+  cancellation_reason String?
+  /// Who cancelled the appointment (e.g. "DOCTOR" or "PATIENT")
+  cancelled_by       String?
   /// Additional notes for the appointment
   notes              String?
 

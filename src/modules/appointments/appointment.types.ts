@@ -8,6 +8,8 @@ export interface CreateAppointmentDto {
   appointment_type: string;
   reason_for_visit?: string;
   appointment_status: string;
+  cancellation_reason?: string;
+  cancelled_by?: string;
   notes?: string;
 }
 

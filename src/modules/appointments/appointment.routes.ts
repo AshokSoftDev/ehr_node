@@ -5,7 +5,6 @@ import {
   listAppointmentsSchema,
   createAppointmentSchema,
   updateAppointmentSchema,
-  deleteAppointmentSchema,
   searchMrnSchema,
   doctorsListSchema,
   listCheckedOutAppointmentsSchema,
@@ -29,6 +28,5 @@ router.get('/completed', validate(listCheckedOutAppointmentsSchema), controller.
 router.get('/', validate(listAppointmentsSchema), controller.list);
 router.post('/', validate(createAppointmentSchema), controller.create);
 router.put('/:id', validate(updateAppointmentSchema), controller.update);
-router.delete('/:id', validate(deleteAppointmentSchema), controller.remove);
 
 export default router;

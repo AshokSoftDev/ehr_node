@@ -59,9 +59,5 @@ export class AppointmentController {
     res.status(200).json({ status: 'success', data });
   });
 
-  remove = catchAsync(async (req: AuthRequest, res: Response) => {
-    const { id } = req.params;
-    const data = await this.service.remove(Number(id), req.user?.userId);
-    res.status(200).json({ status: 'success', message: 'Appointment deleted', data });
-  });
+
 }

@@ -66,10 +66,21 @@ export const createAppointmentSchema = z.object({
     appointment_type: z.string().min(1),
     reason_for_visit: z.string().optional(),
     appointment_status: statusField,
+    cancellation_reason: z.string().optional(),
+    cancelled_by: z.string().optional(),
     notes: z.string().optional(),
   }).refine((data) => data.end_time > data.start_time, {
     message: 'end_time must be after start_time',
     path: ['end_time'],
+  }).refine((data) => {
+    if (data.appointment_status === 'CANCELLED') {
+      if (!data.cancellation_reason || data.cancellation_reason.trim() === '') return false;
+      if (!data.cancelled_by || data.cancelled_by.trim() === '') return false;
+    }
+    return true;
+  }, {
+    message: 'Cancellation reason and cancelled by are required when cancelling an appointment',
+    path: ['cancellation_reason'],
   }),
 });
 
@@ -87,6 +98,8 @@ export const updateAppointmentSchema = z.object({
     appointment_type: z.string().min(1).optional(),
     reason_for_visit: z.string().optional(),
     appointment_status: statusField.optional(),
+    cancellation_reason: z.string().optional(),
+    cancelled_by: z.string().optional(),
     notes: z.string().optional(),
   }).refine((data) => {
     if (!data.start_time || !data.end_time) return true;
@@ -94,6 +107,15 @@ export const updateAppointmentSchema = z.object({
   }, {
     message: 'end_time must be after start_time',
     path: ['end_time'],
+  }).refine((data) => {
+    if (data.appointment_status === 'CANCELLED') {
+      if (!data.cancellation_reason || data.cancellation_reason.trim() === '') return false;
+      if (!data.cancelled_by || data.cancelled_by.trim() === '') return false;
+    }
+    return true;
+  }, {
+    message: 'Cancellation reason and cancelled by are required when cancelling an appointment',
+    path: ['cancellation_reason'],
   }),
 });
 

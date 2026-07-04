@@ -159,9 +159,5 @@ export class AppointmentService {
     return updated;
   }
 
-  async remove(id: number, userId?: string) {
-    const exists = await prisma.appointment.findUnique({ where: { appointment_id: id } });
-    if (!exists || exists.status === 0) throw new AppError('Appointment not found', 404);
-    return this.repo.softDelete(id, userId);
-  }
+
 }
