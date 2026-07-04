@@ -18,6 +18,10 @@ export class AppointmentService {
     return this.repo.list(filters);
   }
 
+  stats(filters: AppointmentFilters) {
+    return this.repo.getStats(filters);
+  }
+
   listCheckedOut(filters: { patient_id?: number; dateFrom?: Date; dateTo?: Date; page?: number; limit?: number }) {
     return this.repo.listCheckedOut(filters);
   }

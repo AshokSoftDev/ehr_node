@@ -26,12 +26,25 @@ export class AppointmentController {
       mrn: q.mrn as string,
       patientName: q.patientName as string,
       doctorName: q.doctorName as string,
-      dateFrom: q.dateFrom ? new Date(String(q.dateFrom)) : undefined,
-      dateTo: q.dateTo ? new Date(String(q.dateTo)) : undefined,
+      appointment_date: (q.appointment_date && q.appointment_date !== 'undefined') ? new Date(String(q.appointment_date)) : undefined,
+      status: (q.status && q.status !== 'undefined') ? String(q.status) : undefined,
       page: q.page ? Number(q.page) : 1,
       limit: q.limit ? Number(q.limit) : 10,
     };
     const data = await this.service.list(filters);
+    res.status(200).json({ status: 'success', data });
+  });
+
+  stats = catchAsync(async (req: AuthRequest, res: Response) => {
+    const q = req.query as any;
+    const filters: AppointmentFilters = {
+      search: q.search as string,
+      mrn: q.mrn as string,
+      patientName: q.patientName as string,
+      doctorName: q.doctorName as string,
+      appointment_date: (q.appointment_date && q.appointment_date !== 'undefined') ? new Date(String(q.appointment_date)) : undefined,
+    };
+    const data = await this.service.stats(filters);
     res.status(200).json({ status: 'success', data });
   });
 

@@ -26,6 +26,7 @@ router.get('/completed', validate(listCheckedOutAppointmentsSchema), controller.
 
 // Appointments CRUD + list
 router.get('/', validate(listAppointmentsSchema), controller.list);
+router.get('/stats', validate(listAppointmentsSchema), controller.stats);
 router.post('/', validate(createAppointmentSchema), controller.create);
 router.put('/:id', validate(updateAppointmentSchema), controller.update);
 

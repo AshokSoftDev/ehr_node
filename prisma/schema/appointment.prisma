@@ -24,6 +24,8 @@ model Appointment {
   cancellation_reason String?
   /// Who cancelled the appointment (e.g. "DOCTOR" or "PATIENT")
   cancelled_by       String?
+  /// Auto-incrementing token per doctor per day
+  token              Int?
   /// Additional notes for the appointment
   notes              String?
 

@@ -16,12 +16,12 @@ export interface CreateAppointmentDto {
 export type UpdateAppointmentDto = Partial<CreateAppointmentDto>;
 
 export interface AppointmentFilters {
+  search?: string;
   mrn?: string;
   patientName?: string;
   doctorName?: string;
-  search?: string;
-  dateFrom?: Date;
-  dateTo?: Date;
+  appointment_date?: Date;
+  status?: string;
   page?: number;
   limit?: number;
 }
@@ -42,4 +42,5 @@ export interface AppointmentSnapshot {
   doctor_firstName: string;
   doctor_lastName: string;
   doctor_specialty: string;
+  token?: number;
 }
