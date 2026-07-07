@@ -1,71 +1,71 @@
 /// Doctor — Medical practitioner profile
 model Doctor {
-    /// Unique UUID identifier for the doctor
-    id           String   @id @default(uuid())
-    /// Title (e.g., "Dr.", "Prof.")
-    title        String
-    /// First name
-    firstName    String
-    /// Last name
-    lastName     String
-    /// Date of birth
-    dob          DateTime
-    /// Email address (unique)
-    email        String   @unique
-    /// Medical licence number (unique)
-    licenceNo    String   @unique
-    /// Academic degree (e.g., "MBBS", "MDS")
-    degree       String
-    /// Medical specialty (e.g., "General Dentistry", "Orthodontics")
-    specialty    String
-    /// Appointment time block duration (e.g., "5min", "10min", "15min", "30min", "1hr")
-    timeBlock    String?
-    /// Display name shown in UI and reports
-    displayName  String
-    /// Hex color code for calendar/UI display (e.g., "#4f46e5")
-    displayColor String
+  /// Unique UUID identifier for the doctor
+  id           String   @id @default(uuid())
+  /// Title (e.g., "Dr.", "Prof.")
+  title        String
+  /// First name
+  firstName    String
+  /// Last name
+  lastName     String
+  /// Date of birth
+  dob          DateTime
+  /// Email address (unique)
+  email        String   @unique
+  /// Medical licence number (unique)
+  licenceNo    String   @unique
+  /// Academic degree (e.g., "MBBS", "MDS")
+  degree       String
+  /// Medical specialty (e.g., "General Dentistry", "Orthodontics")
+  specialty    String
+  /// Appointment time block duration (e.g., "5min", "10min", "15min", "30min", "1hr")
+  timeBlock    String?
+  /// Display name shown in UI and reports
+  displayName  String
+  /// Hex color code for calendar/UI display (e.g., "#4f46e5")
+  displayColor String
 
-    /// Street address
-    address String?
-    /// Area / locality
-    area    String?
-    /// City
-    city    String?
-    /// State / province
-    state   String?
-    /// Country
-    country String?
-    /// Postal / PIN code
-    pincode String?
+  /// Street address
+  address String?
+  /// Area / locality
+  area    String?
+  /// City
+  city    String?
+  /// State / province
+  state   String?
+  /// Country
+  country String?
+  /// Postal / PIN code
+  pincode String?
 
-    /// Record status: 1 = active, 0 = inactive
-    status Int @default(1)
+  /// Record status: 1 = active, 0 = inactive
+  status Int @default(1)
 
-    /// Timestamp when the record was created
-    createdAt DateTime  @default(now())
-    /// User ID who created this record
-    createdBy String?
-    /// Timestamp of last update
-    updatedAt DateTime  @updatedAt
-    /// User ID who last updated this record
-    updatedBy String?
-    /// Soft-delete timestamp (null = not deleted)
-    deletedAt DateTime?
-    /// User ID who soft-deleted this record
-    deletedBy String?
+  /// Timestamp when the record was created
+  createdAt DateTime  @default(now())
+  /// User ID who created this record
+  createdBy String?
+  /// Timestamp of last update
+  updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
+  updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
+  deletedAt DateTime?
+  /// User ID who soft-deleted this record
+  deletedBy String?
 
-    // Relations
-    appointments  Appointment[]
-    visits        Visit[]
-    patientInfo   PatientInfo[]
-    clinicalNotes ClinicalNotes[]
-    prescriptions Prescription[]
-    dentalHPIs    DentalHPI[]
+  // Relations
+  appointments  Appointment[]
+  visits        Visit[]
+  patientInfo   PatientInfo[]
+  clinicalNotes ClinicalNotes[]
+  prescriptions Prescription[]
+  dentalHPIs    DentalHPI[]
 
-    @@index([email])
-    @@index([licenceNo])
-    @@index([specialty])
-    @@index([status])
-    @@index([createdAt])
-    @@index([deletedAt])
+  @@index([email])
+  @@index([licenceNo])
+  @@index([specialty])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
 }

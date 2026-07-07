@@ -5,6 +5,7 @@ import { authenticate, requireModule } from '../../middleware/auth.middleware';
 import patientInfoRoutes from './info/patientInfo.routes';
 import patientEmergencyRoutes from './emergency/patientEmergency.routes';
 import patientAllergyRoutes from './allergy/patientAllergy.routes';
+import patientVitalsRoutes from './vitals/vitals.routes';
 import {
     createPatientSchema,
     updatePatientSchema,
@@ -23,6 +24,7 @@ router.use(authenticate);
 router.use('/:patientId/info', patientInfoRoutes);
 router.use('/:patientId/emergency', patientEmergencyRoutes);
 router.use('/:patientId/allergies', patientAllergyRoutes);
+router.use('/:patientId/vitals', patientVitalsRoutes);
 
 router.post('/', validate(createPatientSchema), patientController.createPatient);
 router.get('/', validate(getAllPatientsSchema), patientController.getAllPatients);

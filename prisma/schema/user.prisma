@@ -1,160 +1,160 @@
 /// User — System user account
 model User {
-    /// Unique UUID identifier
-    userId      String  @id @default(uuid())
-    /// Title (e.g., "Mr", "Mrs", "Dr")
-    title       String
-    /// Full display name
-    fullName    String
-    /// First name
-    firstName   String
-    /// Last name
-    lastName    String
-    /// Email address (unique, used for login)
-    email       String  @unique
-    /// Phone number (optional)
-    phoneNumber String?
-    /// FK to Group — role/permission group (null for root user)
-    groupId     String?
-    /// Hashed password
-    password    String
+  /// Unique UUID identifier
+  userId      String  @id @default(uuid())
+  /// Title (e.g., "Mr", "Mrs", "Dr")
+  title       String
+  /// Full display name
+  fullName    String
+  /// First name
+  firstName   String
+  /// Last name
+  lastName    String
+  /// Email address (unique, used for login)
+  email       String  @unique
+  /// Phone number (optional)
+  phoneNumber String?
+  /// FK to Group — role/permission group (null for root user)
+  groupId     String?
+  /// Hashed password
+  password    String
 
-    /// FK to parent User — for hierarchical user management
-    parentId    String?
-    /// Account type: "root" or "child"
-    accountType String  @default("child")
+  /// FK to parent User — for hierarchical user management
+  parentId    String?
+  /// Account type: "root" or "child"
+  accountType String  @default("child")
 
-    /// Timestamp when the record was created
-    createdAt DateTime @default(now())
-    /// User ID who created this record
-    createdBy String?
-    /// Timestamp of last update
-    updatedAt DateTime @updatedAt
-    /// User ID who last updated this record
-    updatedBy String?
+  /// Timestamp when the record was created
+  createdAt DateTime @default(now())
+  /// User ID who created this record
+  createdBy String?
+  /// Timestamp of last update
+  updatedAt DateTime @updatedAt
+  /// User ID who last updated this record
+  updatedBy String?
 
-    /// Account status: 1 = active, 0 = inactive
-    userStatus Int       @default(1)
-    /// Date of birth (optional)
-    dob        DateTime?
-    /// One-time password for verification/reset
-    otp        String?
-    /// OTP expiry timestamp
-    otpExpiry  DateTime?
+  /// Account status: 1 = active, 0 = inactive
+  userStatus Int       @default(1)
+  /// Date of birth (optional)
+  dob        DateTime?
+  /// One-time password for verification/reset
+  otp        String?
+  /// OTP expiry timestamp
+  otpExpiry  DateTime?
 
-    group Group? @relation(fields: [groupId], references: [id])
+  group Group? @relation(fields: [groupId], references: [id])
 
-    parent   User?  @relation("ParentChild", fields: [parentId], references: [userId])
-    children User[] @relation("ParentChild")
+  parent   User?  @relation("ParentChild", fields: [parentId], references: [userId])
+  children User[] @relation("ParentChild")
 
-    creator      User?  @relation("UserCreator", fields: [createdBy], references: [userId])
-    createdUsers User[] @relation("UserCreator")
+  creator      User?  @relation("UserCreator", fields: [createdBy], references: [userId])
+  createdUsers User[] @relation("UserCreator")
 
-    updater      User?  @relation("UserUpdater", fields: [updatedBy], references: [userId])
-    updatedUsers User[] @relation("UserUpdater")
+  updater      User?  @relation("UserUpdater", fields: [updatedBy], references: [userId])
+  updatedUsers User[] @relation("UserUpdater")
 
-    @@index([email])
-    @@index([groupId])
-    @@index([userStatus])
-    @@index([parentId])
-    @@index([accountType])
-    @@index([createdBy])
+  @@index([email])
+  @@index([groupId])
+  @@index([userStatus])
+  @@index([parentId])
+  @@index([accountType])
+  @@index([createdBy])
 }
 
 /// Group — Role/permission group that users belong to
 model Group {
-    /// Unique UUID identifier
-    id          String   @id @default(uuid())
-    /// Group name (unique, e.g., "Admin", "Receptionist", "Doctor")
-    name        String   @unique
-    /// Description of the group's purpose
-    description String?
-    /// Timestamp when the record was created
-    createdAt   DateTime @default(now())
-    /// User ID who created this record
-    createdBy   String?
-    /// Timestamp of last update
-    updatedAt   DateTime @updatedAt
-    /// User ID who last updated this record
-    updatedBy   String?
+  /// Unique UUID identifier
+  id          String   @id @default(uuid())
+  /// Group name (unique, e.g., "Admin", "Receptionist", "Doctor")
+  name        String   @unique
+  /// Description of the group's purpose
+  description String?
+  /// Timestamp when the record was created
+  createdAt   DateTime @default(now())
+  /// User ID who created this record
+  createdBy   String?
+  /// Timestamp of last update
+  updatedAt   DateTime @updatedAt
+  /// User ID who last updated this record
+  updatedBy   String?
 
-    users                User[]
-    permissions          GroupModulePermission[]
-    subModulePermissions GroupSubModulePermission[]
+  users                User[]
+  permissions          GroupModulePermission[]
+  subModulePermissions GroupSubModulePermission[]
 }
 
 /// Module — Top-level application module (e.g., "Patients", "Billing", "Appointments")
 model Module {
-    /// Unique UUID identifier
-    id          String   @id @default(uuid())
-    /// Module name (unique)
-    name        String   @unique
-    /// Description of the module
-    description String?
-    /// Timestamp when the record was created
-    createdAt   DateTime @default(now())
-    /// Timestamp of last update
-    updatedAt   DateTime @updatedAt
+  /// Unique UUID identifier
+  id          String   @id @default(uuid())
+  /// Module name (unique)
+  name        String   @unique
+  /// Description of the module
+  description String?
+  /// Timestamp when the record was created
+  createdAt   DateTime @default(now())
+  /// Timestamp of last update
+  updatedAt   DateTime @updatedAt
 
-    subModules  SubModule[]
-    permissions GroupModulePermission[]
+  subModules  SubModule[]
+  permissions GroupModulePermission[]
 }
 
 /// SubModule — Action/sub-feature within a module (e.g., "Add", "Edit", "Delete")
 model SubModule {
-    /// Unique UUID identifier
-    id          String  @id @default(uuid())
-    /// FK to parent Module
-    moduleId    String
-    /// Action/sub-feature name (e.g., "Add", "Edit", "Delete", "Export")
-    name        String
-    /// Description of the sub-module action
-    description String?
+  /// Unique UUID identifier
+  id          String  @id @default(uuid())
+  /// FK to parent Module
+  moduleId    String
+  /// Action/sub-feature name (e.g., "Add", "Edit", "Delete", "Export")
+  name        String
+  /// Description of the sub-module action
+  description String?
 
-    module      Module                     @relation(fields: [moduleId], references: [id])
-    permissions GroupSubModulePermission[]
+  module      Module                     @relation(fields: [moduleId], references: [id])
+  permissions GroupSubModulePermission[]
 
-    @@unique([moduleId, name])
+  @@unique([moduleId, name])
 }
 
 /// GroupModulePermission — Grants a group access to a module
 model GroupModulePermission {
-    /// Unique UUID identifier
-    id        String  @id @default(uuid())
-    /// FK to Group
-    groupId   String
-    /// FK to Module
-    moduleId  String
-    /// Whether the group has access to this module
-    hasAccess Boolean @default(true)
+  /// Unique UUID identifier
+  id        String  @id @default(uuid())
+  /// FK to Group
+  groupId   String
+  /// FK to Module
+  moduleId  String
+  /// Whether the group has access to this module
+  hasAccess Boolean @default(true)
 
-    group                Group                      @relation(fields: [groupId], references: [id])
-    module               Module                     @relation(fields: [moduleId], references: [id])
-    subModulePermissions GroupSubModulePermission[]
+  group                Group                      @relation(fields: [groupId], references: [id])
+  module               Module                     @relation(fields: [moduleId], references: [id])
+  subModulePermissions GroupSubModulePermission[]
 
-    @@unique([groupId, moduleId])
-    @@index([groupId])
-    @@index([moduleId])
+  @@unique([groupId, moduleId])
+  @@index([groupId])
+  @@index([moduleId])
 }
 
 /// GroupSubModulePermission — Grants a group permission for a specific sub-module action
 model GroupSubModulePermission {
-    /// Unique UUID identifier
-    id                      String  @id @default(uuid())
-    /// FK to Group
-    groupId                 String
-    /// FK to SubModule
-    subModuleId             String
-    /// Whether this action is allowed for the group
-    allowed                 Boolean @default(false)
-    /// FK to parent GroupModulePermission (optional link)
-    groupModulePermissionId String?
+  /// Unique UUID identifier
+  id                      String  @id @default(uuid())
+  /// FK to Group
+  groupId                 String
+  /// FK to SubModule
+  subModuleId             String
+  /// Whether this action is allowed for the group
+  allowed                 Boolean @default(false)
+  /// FK to parent GroupModulePermission (optional link)
+  groupModulePermissionId String?
 
-    group                 Group                  @relation(fields: [groupId], references: [id])
-    subModule             SubModule              @relation(fields: [subModuleId], references: [id])
-    groupModulePermission GroupModulePermission? @relation(fields: [groupModulePermissionId], references: [id])
+  group                 Group                  @relation(fields: [groupId], references: [id])
+  subModule             SubModule              @relation(fields: [subModuleId], references: [id])
+  groupModulePermission GroupModulePermission? @relation(fields: [groupModulePermissionId], references: [id])
 
-    @@unique([groupId, subModuleId])
-    @@index([groupId])
-    @@index([subModuleId])
+  @@unique([groupId, subModuleId])
+  @@index([groupId])
+  @@index([subModuleId])
 }

@@ -60,6 +60,7 @@ model Patient {
   invoices         Invoice[]
   receipts         Receipt[]
   advances         PatientAdvance[]
+  vitals           PatientVital[]
 }
 
 /// PatientAllergy — Records a patient's allergy information
@@ -185,4 +186,39 @@ model PatientEmergency {
   @@index([status])
   @@index([createdAt])
   @@index([deletedAt])
+}
+
+/// PatientVital — Records patient vital signs
+model PatientVital {
+  vital_id         Int      @id @default(autoincrement())
+  patient_id       Int
+  visit_id         Int?
+  vital_date       DateTime
+  vital_time       String?
+  weight           Decimal?
+  weight_unit      String   @default("kg")
+  height           Decimal?
+  height_unit      String   @default("cm")
+  bmi              Decimal?
+  temperature      Decimal?
+  temperature_unit String   @default("celsius")
+  pulse            Int?
+  rr               Int?
+  bp_systolic      Int?
+  bp_diastolic     Int?
+
+  status    Int       @default(1)
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  patient Patient @relation(fields: [patient_id], references: [patient_id])
+  visit   Visit?  @relation(fields: [visit_id], references: [visit_id])
+
+  @@index([patient_id])
+  @@index([visit_id])
+  @@index([status])
 }

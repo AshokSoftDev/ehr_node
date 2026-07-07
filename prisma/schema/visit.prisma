@@ -41,6 +41,7 @@ model Visit {
   documents     VisitDocument[]
   dentalHPIs    DentalHPI[]
   invoices      Invoice[]
+  vitals        PatientVital[]
 
   @@index([appointment_id])
   @@index([patient_id])

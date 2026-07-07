@@ -1,33 +1,33 @@
 /// Appointment — Scheduled patient-doctor appointment
 model Appointment {
   /// Unique auto-incremented appointment identifier
-  appointment_id     Int      @id @default(autoincrement())
+  appointment_id      Int      @id @default(autoincrement())
   /// FK to Patient — the patient this appointment is for
-  patient_id         Int
+  patient_id          Int
   /// FK to Doctor — the attending doctor
-  doctor_id          String
+  doctor_id           String
   /// Date of the appointment
-  appointment_date   DateTime
+  appointment_date    DateTime
   /// Scheduled start time
-  start_time         DateTime
+  start_time          DateTime
   /// Scheduled end time
-  end_time           DateTime
+  end_time            DateTime
   /// Duration in minutes (optional, derived from start/end)
-  duration           Int?
+  duration            Int?
   /// Type of appointment (e.g., "Consultation", "Follow-up", "Procedure")
-  appointment_type   String
+  appointment_type    String
   /// Patient's reason for visiting
-  reason_for_visit   String?
+  reason_for_visit    String?
   /// Workflow status (e.g., "scheduled", "checked_in", "completed", "cancelled")
-  appointment_status String
+  appointment_status  String
   /// Reason for cancellation if the appointment is cancelled
   cancellation_reason String?
   /// Who cancelled the appointment (e.g. "DOCTOR" or "PATIENT")
-  cancelled_by       String?
+  cancelled_by        String?
   /// Auto-incrementing token per doctor per day
-  token              Int?
+  token               Int?
   /// Additional notes for the appointment
-  notes              String?
+  notes               String?
 
   // Snapshot fields (denormalized for reporting/search)
   /// Patient MRN snapshot at booking time
