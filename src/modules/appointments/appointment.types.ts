@@ -21,6 +21,8 @@ export interface AppointmentFilters {
   patientName?: string;
   doctorName?: string;
   appointment_date?: Date;
+  startDate?: Date;
+  endDate?: Date;
   status?: string;
   page?: number;
   limit?: number;

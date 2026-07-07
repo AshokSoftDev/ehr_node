@@ -36,7 +36,7 @@ export class AppointmentRepository {
 
   async list(filters: AppointmentFilters = {}): Promise<PaginatedAppointmentsResponse<any>> {
     console.log("repository list filters received:", filters);
-    const { search, mrn, patientName, doctorName, appointment_date, status, page = 1, limit = 10 } = filters;
+    const { search, mrn, patientName, doctorName, appointment_date, startDate, endDate, status, page = 1, limit = 10 } = filters;
     const skip = (page - 1) * limit;
 
     const orSearch: Prisma.AppointmentWhereInput[] = [];
@@ -60,6 +60,9 @@ export class AppointmentRepository {
       ...(appointment_date ? { appointment_date: {
         gte: new Date(new Date(appointment_date).setHours(0, 0, 0, 0)),
         lt: new Date(new Date(appointment_date).setHours(24, 0, 0, 0)),
+      }} : startDate || endDate ? { appointment_date: {
+        ...(startDate ? { gte: new Date(startDate) } : {}),
+        ...(endDate ? { lt: new Date(endDate) } : {}),
       }} : {}),
       ...(status && status !== 'ALL' ? { appointment_status: status.toUpperCase() } : {}),
       ...(orSearch.length ? { OR: orSearch } : {}),
@@ -107,7 +110,7 @@ export class AppointmentRepository {
   }
 
   async getStats(filters: AppointmentFilters = {}) {
-    const { search, mrn, patientName, doctorName, appointment_date } = filters;
+    const { search, mrn, patientName, doctorName, appointment_date, startDate, endDate } = filters;
     const orSearch: Prisma.AppointmentWhereInput[] = [];
     if (search) {
       orSearch.push({ patient: { OR: [
@@ -129,6 +132,9 @@ export class AppointmentRepository {
       ...(appointment_date ? { appointment_date: {
         gte: new Date(new Date(appointment_date).setHours(0, 0, 0, 0)),
         lt: new Date(new Date(appointment_date).setHours(24, 0, 0, 0)),
+      }} : startDate || endDate ? { appointment_date: {
+        ...(startDate ? { gte: new Date(startDate) } : {}),
+        ...(endDate ? { lt: new Date(endDate) } : {}),
       }} : {}),
       ...(orSearch.length ? { OR: orSearch } : {}),
       patient: {

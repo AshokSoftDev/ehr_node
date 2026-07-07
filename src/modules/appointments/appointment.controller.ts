@@ -27,6 +27,8 @@ export class AppointmentController {
       patientName: q.patientName as string,
       doctorName: q.doctorName as string,
       appointment_date: (q.appointment_date && q.appointment_date !== 'undefined') ? new Date(String(q.appointment_date)) : undefined,
+      startDate: (q.startDate && q.startDate !== 'undefined') ? new Date(String(q.startDate)) : undefined,
+      endDate: (q.endDate && q.endDate !== 'undefined') ? new Date(String(q.endDate)) : undefined,
       status: (q.status && q.status !== 'undefined') ? String(q.status) : undefined,
       page: q.page ? Number(q.page) : 1,
       limit: q.limit ? Number(q.limit) : 10,
@@ -43,6 +45,8 @@ export class AppointmentController {
       patientName: q.patientName as string,
       doctorName: q.doctorName as string,
       appointment_date: (q.appointment_date && q.appointment_date !== 'undefined') ? new Date(String(q.appointment_date)) : undefined,
+      startDate: (q.startDate && q.startDate !== 'undefined') ? new Date(String(q.startDate)) : undefined,
+      endDate: (q.endDate && q.endDate !== 'undefined') ? new Date(String(q.endDate)) : undefined,
     };
     const data = await this.service.stats(filters);
     res.status(200).json({ status: 'success', data });
