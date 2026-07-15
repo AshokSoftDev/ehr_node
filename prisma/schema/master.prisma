@@ -181,3 +181,38 @@ model DocumentType {
   @@index([createdAt])
   @@index([deletedAt])
 }
+
+/// MasterAppointmentType — Master list of appointment types
+model MasterAppointmentType {
+  /// Unique auto-incremented identifier
+  id               Int     @id @default(autoincrement())
+  /// Appointment type code (e.g., "NEW_PATIENT")
+  code             String  @unique
+  /// Appointment type name
+  name             String
+  /// Description
+  description      String?
+  /// Default duration in minutes
+  duration_minutes Int     @default(30)
+  /// Color code for UI display
+  color_code       String?
+
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
+  createdAt DateTime  @default(now())
+  /// User ID who created this record
+  createdBy String?
+  /// Timestamp of last update
+  updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
+  updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
+  deletedAt DateTime?
+  /// User ID who soft-deleted this record
+  deletedBy String?
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
