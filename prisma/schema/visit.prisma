@@ -117,7 +117,7 @@ model VisitDocument {
   /// Unique auto-incremented document identifier
   document_id      Int     @id @default(autoincrement())
   /// FK to Visit
-  visit_id         Int
+  visit_id         Int?
   /// FK to Patient
   patient_id       Int
   /// FK to DocumentType master
@@ -149,7 +149,7 @@ model VisitDocument {
   deletedBy String?
 
   // Relations
-  visit        Visit        @relation(fields: [visit_id], references: [visit_id])
+  visit        Visit?       @relation(fields: [visit_id], references: [visit_id])
   patient      Patient      @relation(fields: [patient_id], references: [patient_id])
   documentType DocumentType @relation(fields: [document_type_id], references: [document_type_id])
 
