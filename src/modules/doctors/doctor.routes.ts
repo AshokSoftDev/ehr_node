@@ -23,6 +23,7 @@ router.get('/', doctorController.getAllDoctors);
 // router.get('/', validateQuery(getAllDoctorsSchema), doctorController.getAllDoctors);
 router.get('/:id', validate(getDoctorSchema), doctorController.getDoctor);
 router.put('/:id', validate(updateDoctorSchema), doctorController.updateDoctor);
+router.put('/:id/appointment-types', doctorController.syncAppointmentTypes);
 router.delete('/:id', validate(deleteDoctorSchema), doctorController.deleteDoctor);
 
 export default router;

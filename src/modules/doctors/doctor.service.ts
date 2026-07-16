@@ -82,4 +82,12 @@ export class DoctorService {
         const deletedDoctor = await this.doctorRepository.softDelete(id, userId);
         return deletedDoctor;
     }
+
+    async syncAppointmentTypes(doctorId: string, types: { appointment_type: string, duration_minutes: number }[]) {
+        const doctor = await this.doctorRepository.findById(doctorId);
+        if (!doctor) {
+            throw new AppError('Doctor not found', 404);
+        }
+        return this.doctorRepository.syncAppointmentTypes(doctorId, types);
+    }
 }

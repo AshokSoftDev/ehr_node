@@ -63,4 +63,15 @@ export class DoctorController {
             data: doctor,
         });
     });
+
+    syncAppointmentTypes = catchAsync(async (req: AuthRequest, res: Response) => {
+        const { id } = req.params;
+        const types = req.body.types;
+        const result = await this.doctorService.syncAppointmentTypes(id, types);
+        res.status(200).json({
+            status: 'success',
+            message: 'Doctor appointment types synced successfully',
+            data: result,
+        });
+    });
 }

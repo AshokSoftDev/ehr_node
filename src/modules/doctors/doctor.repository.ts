@@ -12,6 +12,7 @@ export class DoctorRepository {
     async findById(id: string): Promise<DoctorWithCounts | null> {
         return prisma.doctor.findUnique({
             where: { id },
+            include: { appointmentTypes: true },
         });
     }
 
@@ -86,5 +87,26 @@ export class DoctorRepository {
 
     async findActive(pagination: PaginationParams = {}): Promise<DoctorListResponse> {
         return this.findAll({ status: 1 }, pagination);
+    }
+
+    async syncAppointmentTypes(doctorId: string, types: { appointment_type: string, duration_minutes: number }[]) {
+        // We delete existing mappings for this doctor and insert the new ones
+        return prisma.$transaction(async (tx) => {
+            await tx.doctorAppointmentType.deleteMany({
+                where: { doctor_id: doctorId },
+            });
+            if (types && types.length > 0) {
+                await tx.doctorAppointmentType.createMany({
+                    data: types.map(t => ({
+                        doctor_id: doctorId,
+                        appointment_type: t.appointment_type,
+                        duration_minutes: t.duration_minutes,
+                    })),
+                });
+            }
+            return tx.doctorAppointmentType.findMany({
+                where: { doctor_id: doctorId }
+            });
+        });
     }
 }

@@ -55,12 +55,13 @@ model Doctor {
   deletedBy String?
 
   // Relations
-  appointments  Appointment[]
-  visits        Visit[]
-  patientInfo   PatientInfo[]
-  clinicalNotes ClinicalNotes[]
-  prescriptions Prescription[]
-  dentalHPIs    DentalHPI[]
+  appointments     Appointment[]
+  appointmentTypes DoctorAppointmentType[]
+  visits           Visit[]
+  patientInfo      PatientInfo[]
+  clinicalNotes    ClinicalNotes[]
+  prescriptions    Prescription[]
+  dentalHPIs       DentalHPI[]
 
   @@index([email])
   @@index([licenceNo])
@@ -68,4 +69,21 @@ model Doctor {
   @@index([status])
   @@index([createdAt])
   @@index([deletedAt])
+}
+
+/// DoctorAppointmentType — Custom appointment durations per doctor
+model DoctorAppointmentType {
+  /// Unique auto-incremented identifier
+  id               Int    @id @default(autoincrement())
+  /// FK to Doctor
+  doctor_id        String
+  /// Appointment type code (matches MasterAppointmentType.code)
+  appointment_type String
+  /// Custom duration in minutes for this specific doctor and type
+  duration_minutes Int
+
+  doctor Doctor @relation(fields: [doctor_id], references: [id], onDelete: Cascade)
+
+  @@unique([doctor_id, appointment_type])
+  @@index([doctor_id])
 }
