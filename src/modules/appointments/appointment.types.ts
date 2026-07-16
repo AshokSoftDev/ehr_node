@@ -20,6 +20,7 @@ export interface AppointmentFilters {
   mrn?: string;
   patientName?: string;
   doctorName?: string;
+  doctor_id?: string;
   appointment_date?: Date;
   startDate?: Date;
   endDate?: Date;

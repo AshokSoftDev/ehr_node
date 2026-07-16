@@ -30,6 +30,7 @@ export const listAppointmentsSchema = z.object({
     mrn: z.string().optional(),
     patientName: z.string().optional(),
     doctorName: z.string().optional(),
+    doctor_id: z.string().uuid().or(z.string().min(1)).optional(),
     appointment_date: z.preprocess(toDate, z.date().optional()),
     status: z.string().optional(),
     page: z.string().regex(/^\d+$/).transform(Number).optional(),

@@ -36,7 +36,7 @@ export class AppointmentRepository {
 
   async list(filters: AppointmentFilters = {}): Promise<PaginatedAppointmentsResponse<any>> {
     console.log("repository list filters received:", filters);
-    const { search, mrn, patientName, doctorName, appointment_date, startDate, endDate, status, page = 1, limit = 10 } = filters;
+    const { search, mrn, patientName, doctorName, doctor_id, appointment_date, startDate, endDate, status, page = 1, limit = 10 } = filters;
     const skip = (page - 1) * limit;
 
     const orSearch: Prisma.AppointmentWhereInput[] = [];
@@ -65,6 +65,7 @@ export class AppointmentRepository {
         ...(endDate ? { lt: new Date(endDate) } : {}),
       }} : {}),
       ...(status && status !== 'ALL' ? { appointment_status: status.toUpperCase() } : {}),
+      ...(doctor_id ? { doctor_id } : {}),
       ...(orSearch.length ? { OR: orSearch } : {}),
       patient: {
         activeStatus: 1,
@@ -110,7 +111,7 @@ export class AppointmentRepository {
   }
 
   async getStats(filters: AppointmentFilters = {}) {
-    const { search, mrn, patientName, doctorName, appointment_date, startDate, endDate } = filters;
+    const { search, mrn, patientName, doctorName, doctor_id, appointment_date, startDate, endDate } = filters;
     const orSearch: Prisma.AppointmentWhereInput[] = [];
     if (search) {
       orSearch.push({ patient: { OR: [
@@ -136,6 +137,7 @@ export class AppointmentRepository {
         ...(startDate ? { gte: new Date(startDate) } : {}),
         ...(endDate ? { lt: new Date(endDate) } : {}),
       }} : {}),
+      ...(doctor_id ? { doctor_id } : {}),
       ...(orSearch.length ? { OR: orSearch } : {}),
       patient: {
         activeStatus: 1,
