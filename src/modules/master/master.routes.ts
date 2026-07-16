@@ -32,6 +32,7 @@ import {
   deleteLocationSchema,
 } from './location/location.schema';
 import documentTypeRoutes from './document_type/documentType.routes';
+import appointmentTypeRoutes from './appointment_type/appointmentType.routes';
 
 const router = Router();
 
@@ -62,6 +63,9 @@ router.delete('/drug/:id', validate(deleteDrugSchema), drugController.remove);
 
 // Document Type routes
 router.use('/document-type', documentTypeRoutes);
+
+// Appointment Type routes
+router.use('/appointment-type', appointmentTypeRoutes);
 
 // Location routes
 const locationController = new LocationController();
