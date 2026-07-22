@@ -21,9 +21,14 @@ export class PatientAllergyController {
     res.status(200).json({ status: 'success', data });
   });
 
-  create = catchAsync(async (req: AuthRequest<PatientAllergyPayload>, res: Response) => {
+  create = catchAsync(async (req: AuthRequest<PatientAllergyPayload | PatientAllergyPayload[]>, res: Response) => {
     const patientId = Number(req.params.patientId);
-    const data = await this.service.create(patientId, req.body, req.user?.userId);
+    let data;
+    if (Array.isArray(req.body)) {
+      data = await this.service.createBulk(patientId, req.body, req.user?.userId);
+    } else {
+      data = await this.service.create(patientId, req.body, req.user?.userId);
+    }
     res.status(201).json({ status: 'success', data });
   });
 
@@ -39,5 +44,11 @@ export class PatientAllergyController {
     const paId = Number(req.params.paId);
     const data = await this.service.remove(patientId, paId, req.user?.userId);
     res.status(200).json({ status: 'success', message: 'Patient allergy removed', data });
+  });
+
+  sync = catchAsync(async (req: AuthRequest, res: Response) => {
+    const patientId = Number(req.params.patientId);
+    const data = await this.service.syncBulk(patientId, req.body, req.user?.userId);
+    res.status(200).json({ status: 'success', data });
   });
 }

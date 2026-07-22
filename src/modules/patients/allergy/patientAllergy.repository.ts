@@ -37,6 +37,10 @@ export class PatientAllergyRepository {
     return prisma.patientAllergy.create({ data });
   }
 
+  createMany(data: Prisma.PatientAllergyCreateManyInput[]) {
+    return prisma.patientAllergy.createMany({ data });
+  }
+
   update(paId: number, data: Prisma.PatientAllergyUncheckedUpdateInput) {
     return prisma.patientAllergy.update({
       where: { id: paId },
