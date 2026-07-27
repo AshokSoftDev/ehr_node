@@ -61,6 +61,7 @@ model Patient {
   receipts         Receipt[]
   advances         PatientAdvance[]
   vitals           PatientVital[]
+  patientPmhs      PatientPmh[]
 }
 
 /// PatientAllergy — Records a patient's allergy information
@@ -97,6 +98,47 @@ model PatientAllergy {
 
   @@index([patient_id])
   @@index([allergy_id])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+/// PatientPmh — Records a patient's past medical history
+model PatientPmh {
+  /// Unique auto-incremented identifier
+  id          Int     @id @default(autoincrement())
+  /// FK to Patient
+  patient_id  Int
+  /// FK to PMH master
+  pmh_id      Int
+  /// Month of diagnosis
+  month       Int?
+  /// Year of diagnosis
+  year        Int?
+  /// Additional comments/notes
+  comments    String?
+
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
+  createdAt DateTime  @default(now())
+  /// User ID who created this record
+  createdBy String?
+  /// Timestamp of last update
+  updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
+  updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
+  deletedAt DateTime?
+  /// User ID who soft-deleted this record
+  deletedBy String?
+
+  // Relations
+  patient Patient @relation(fields: [patient_id], references: [patient_id])
+  pmh     Pmh     @relation(fields: [pmh_id], references: [pmh_id])
+
+  @@index([patient_id])
+  @@index([pmh_id])
   @@index([status])
   @@index([createdAt])
   @@index([deletedAt])

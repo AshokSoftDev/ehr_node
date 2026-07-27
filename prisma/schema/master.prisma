@@ -71,6 +71,38 @@ model Allergy {
   @@index([deletedAt])
 }
 
+/// Pmh — Past Medical History master record
+model Pmh {
+  /// Unique auto-incremented PMH identifier
+  pmh_id        Int    @id @default(autoincrement())
+  /// Name of the past medical history condition
+  conditionName String
+  /// Additional notes
+  notes         String?
+
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
+  createdAt DateTime  @default(now())
+  /// User ID who created this record
+  createdBy String?
+  /// Timestamp of last update
+  updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
+  updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
+  deletedAt DateTime?
+  /// User ID who soft-deleted this record
+  deletedBy String?
+
+  // Relations
+  patientPmhs PatientPmh[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
 /// Location — Clinic/branch location
 model Location {
   /// Unique auto-incremented location identifier

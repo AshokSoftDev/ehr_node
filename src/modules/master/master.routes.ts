@@ -74,4 +74,8 @@ router.post('/location', validate(createLocationSchema), locationController.crea
 router.put('/location/:id', validate(updateLocationSchema), locationController.update);
 router.delete('/location/:id', validate(deleteLocationSchema), locationController.remove);
 
+// PMH routes
+import pmhRoutes from './pmh/pmh.routes';
+router.use('/pmh', pmhRoutes);
+
 export default router;
