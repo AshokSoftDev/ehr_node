@@ -86,4 +86,8 @@ router.use('/family-disease', familyDiseaseRoutes);
 import socialRoutes from './social/social.routes';
 router.use('/social', socialRoutes);
 
+// Surgery Master routes
+import surgeryRoutes from './surgery/surgery.routes';
+router.use('/surgery', surgeryRoutes);
+
 export default router;

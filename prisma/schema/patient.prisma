@@ -64,6 +64,7 @@ model Patient {
   patientPmhs            PatientPmh[]
   patientFamilyHistories PatientFamilyHistory[]
   patientSocialHistories PatientSocialHistory[]
+  patientSurgeries       PatientSurgeryHistory[]
 }
 
 /// PatientAllergy — Records a patient's allergy information
@@ -360,4 +361,29 @@ model PatientVital {
   @@index([patient_id])
   @@index([visit_id])
   @@index([status])
+}
+
+/// PatientSurgeryHistory — Records a patient's surgical history
+model PatientSurgeryHistory {
+  id          Int     @id @default(autoincrement())
+  patient_id  Int
+  surgery_id  Int
+  month       Int?
+  year        Int?
+  comments    String?
+  status      Int       @default(1)
+  createdAt     DateTime  @default(now())
+  createdBy     String?
+  updatedAt     DateTime  @updatedAt
+  updatedBy     String?
+  deletedAt     DateTime?
+  deletedBy     String?
+  patient     Patient        @relation(fields: [patient_id], references: [patient_id])
+  surgery     SurgeryMaster  @relation(fields: [surgery_id], references: [surgery_id])
+
+  @@index([patient_id])
+  @@index([surgery_id])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
 }

@@ -316,3 +316,35 @@ model SocialMaster {
   @@index([createdAt])
   @@index([deletedAt])
 }
+
+/// SurgeryMaster — Catalog of surgical procedures and operations
+model SurgeryMaster {
+  /// Unique auto-incremented surgery identifier
+  surgery_id  Int     @id @default(autoincrement())
+  /// Name of the surgical procedure
+  surgeryName String
+  /// Additional notes
+  notes       String?
+
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
+  createdAt DateTime  @default(now())
+  /// User ID who created this record
+  createdBy String?
+  /// Timestamp of last update
+  updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
+  updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
+  deletedAt DateTime?
+  /// User ID who soft-deleted this record
+  deletedBy String?
+
+  // Relations
+  patientSurgeries PatientSurgeryHistory[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
