@@ -248,3 +248,35 @@ model MasterAppointmentType {
   @@index([createdAt])
   @@index([deletedAt])
 }
+
+/// FamilyDisease — Family history disease master record
+model FamilyDisease {
+  /// Unique auto-incremented identifier
+  family_disease_id Int    @id @default(autoincrement())
+  /// Name of the family disease condition (e.g. "Diabetes", "Hypertension")
+  diseaseName       String
+  /// Additional notes
+  notes             String?
+
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
+  createdAt DateTime  @default(now())
+  /// User ID who created this record
+  createdBy String?
+  /// Timestamp of last update
+  updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
+  updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
+  deletedAt DateTime?
+  /// User ID who soft-deleted this record
+  deletedBy String?
+
+  // Relations
+  patientFamilyHistories PatientFamilyHistory[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}

@@ -60,8 +60,9 @@ model Patient {
   invoices         Invoice[]
   receipts         Receipt[]
   advances         PatientAdvance[]
-  vitals           PatientVital[]
-  patientPmhs      PatientPmh[]
+  vitals                 PatientVital[]
+  patientPmhs            PatientPmh[]
+  patientFamilyHistories PatientFamilyHistory[]
 }
 
 /// PatientAllergy — Records a patient's allergy information
@@ -139,6 +140,62 @@ model PatientPmh {
 
   @@index([patient_id])
   @@index([pmh_id])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+/// PatientFamilyHistory — Records a patient's family medical history for a disease
+model PatientFamilyHistory {
+  /// Unique auto-incremented identifier
+  id                Int           @id @default(autoincrement())
+  /// FK to Patient
+  patient_id        Int
+  /// FK to FamilyDisease master
+  family_disease_id Int
+
+  /// Mother affected
+  mother            Boolean       @default(false)
+  /// Father affected
+  father            Boolean       @default(false)
+  /// Sister(s) affected
+  sisters           Boolean       @default(false)
+  /// Brother(s) affected
+  brothers          Boolean       @default(false)
+  /// Maternal Mother (Grandmother) affected
+  maternalMother    Boolean       @default(false)
+  /// Maternal Father (Grandfather) affected
+  maternalFather    Boolean       @default(false)
+  /// Paternal Mother (Grandmother) affected
+  paternalMother    Boolean       @default(false)
+  /// Paternal Father (Grandfather) affected
+  paternalFather    Boolean       @default(false)
+  /// Other relative(s) input text
+  otherRelatives    String?
+  /// Additional comments/notes
+  comments          String?
+
+  /// Record status: 1 = active, 0 = inactive
+  status            Int           @default(1)
+  /// Timestamp when the record was created
+  createdAt         DateTime      @default(now())
+  /// User ID who created this record
+  createdBy         String?
+  /// Timestamp of last update
+  updatedAt         DateTime      @updatedAt
+  /// User ID who last updated this record
+  updatedBy         String?
+  /// Soft-delete timestamp (null = not deleted)
+  deletedAt         DateTime?
+  /// User ID who soft-deleted this record
+  deletedBy         String?
+
+  // Relations
+  patient       Patient       @relation(fields: [patient_id], references: [patient_id])
+  familyDisease FamilyDisease @relation(fields: [family_disease_id], references: [family_disease_id])
+
+  @@index([patient_id])
+  @@index([family_disease_id])
   @@index([status])
   @@index([createdAt])
   @@index([deletedAt])

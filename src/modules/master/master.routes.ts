@@ -78,4 +78,8 @@ router.delete('/location/:id', validate(deleteLocationSchema), locationControlle
 import pmhRoutes from './pmh/pmh.routes';
 router.use('/pmh', pmhRoutes);
 
+// Family Disease routes
+import familyDiseaseRoutes from './family_disease/familyDisease.routes';
+router.use('/family-disease', familyDiseaseRoutes);
+
 export default router;
