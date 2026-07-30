@@ -7,6 +7,7 @@ import patientEmergencyRoutes from './emergency/patientEmergency.routes';
 import patientAllergyRoutes from './allergy/patientAllergy.routes';
 import patientPmhRoutes from './pmh/patientPmh.routes';
 import patientFamilyHistoryRoutes from './family_history/patientFamilyHistory.routes';
+import patientSocialHistoryRoutes from './social_history/patientSocialHistory.routes';
 import patientVitalsRoutes from './vitals/vitals.routes';
 import patientDocumentRoutes from './document/patientDocument.routes';
 import {
@@ -29,6 +30,7 @@ router.use('/:patientId/emergency', patientEmergencyRoutes);
 router.use('/:patientId/allergies', patientAllergyRoutes);
 router.use('/:patientId/pmh', patientPmhRoutes);
 router.use('/:patientId/family-history', patientFamilyHistoryRoutes);
+router.use('/:patientId/social-history', patientSocialHistoryRoutes);
 router.use('/:patientId/vitals', patientVitalsRoutes);
 router.use('/:patientId/documents', patientDocumentRoutes);
 

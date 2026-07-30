@@ -82,4 +82,8 @@ router.use('/pmh', pmhRoutes);
 import familyDiseaseRoutes from './family_disease/familyDisease.routes';
 router.use('/family-disease', familyDiseaseRoutes);
 
+// Social Master routes
+import socialRoutes from './social/social.routes';
+router.use('/social', socialRoutes);
+
 export default router;

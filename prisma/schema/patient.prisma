@@ -63,6 +63,7 @@ model Patient {
   vitals                 PatientVital[]
   patientPmhs            PatientPmh[]
   patientFamilyHistories PatientFamilyHistory[]
+  patientSocialHistories PatientSocialHistory[]
 }
 
 /// PatientAllergy — Records a patient's allergy information
@@ -196,6 +197,45 @@ model PatientFamilyHistory {
 
   @@index([patient_id])
   @@index([family_disease_id])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+/// PatientSocialHistory — Records a patient's social history option choice for a condition
+model PatientSocialHistory {
+  /// Unique auto-incremented identifier
+  id               Int          @id @default(autoincrement())
+  /// FK to Patient
+  patient_id       Int
+  /// FK to SocialMaster
+  social_master_id Int
+  /// Selected option: 1 = option1, 2 = option2, null = not selected/unanswered
+  selectedOption   Int?
+  /// Additional comments/notes
+  comments         String?
+
+  /// Record status: 1 = active, 0 = inactive
+  status           Int          @default(1)
+  /// Timestamp when the record was created
+  createdAt        DateTime     @default(now())
+  /// User ID who created this record
+  createdBy        String?
+  /// Timestamp of last update
+  updatedAt        DateTime     @updatedAt
+  /// User ID who last updated this record
+  updatedBy        String?
+  /// Soft-delete timestamp (null = not deleted)
+  deletedAt        DateTime?
+  /// User ID who soft-deleted this record
+  deletedBy        String?
+
+  // Relations
+  patient      Patient      @relation(fields: [patient_id], references: [patient_id])
+  socialMaster SocialMaster @relation(fields: [social_master_id], references: [social_master_id])
+
+  @@index([patient_id])
+  @@index([social_master_id])
   @@index([status])
   @@index([createdAt])
   @@index([deletedAt])

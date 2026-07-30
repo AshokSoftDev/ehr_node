@@ -280,3 +280,39 @@ model FamilyDisease {
   @@index([createdAt])
   @@index([deletedAt])
 }
+
+/// SocialMaster — Social history condition master record
+model SocialMaster {
+  /// Unique auto-incremented identifier
+  social_master_id Int    @id @default(autoincrement())
+  /// Name of the social habit/condition (e.g. "Smoking Status", "Alcohol Use")
+  socialName       String
+  /// Option 1 label (e.g. "Yes", "Current", "Regular")
+  option1          String
+  /// Option 2 label (e.g. "No", "Former", "Never")
+  option2          String
+  /// Additional notes (optional)
+  notes            String?
+
+  /// Record status: 1 = active, 0 = inactive
+  status    Int       @default(1)
+  /// Timestamp when the record was created
+  createdAt DateTime  @default(now())
+  /// User ID who created this record
+  createdBy String?
+  /// Timestamp of last update
+  updatedAt DateTime  @updatedAt
+  /// User ID who last updated this record
+  updatedBy String?
+  /// Soft-delete timestamp (null = not deleted)
+  deletedAt DateTime?
+  /// User ID who soft-deleted this record
+  deletedBy String?
+
+  // Relations
+  patientSocialHistories PatientSocialHistory[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
