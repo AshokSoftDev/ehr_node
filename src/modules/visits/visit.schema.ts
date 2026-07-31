@@ -12,8 +12,11 @@ export const listVisitsSchema = z.object({
     dateFrom: z.preprocess(toDate, z.date().optional()),
     dateTo: z.preprocess(toDate, z.date().optional()),
     doctor: z.string().optional(),
+    doctor_id: z.string().optional(),
     patient: z.string().optional(), // name or MRN
+    patient_id: z.string().regex(/^\d+$/).transform(Number).optional(),
     reason: z.string().optional(),
+    search: z.string().optional(),
     status: z.string().optional(), // appointment_status
     page: z.string().regex(/^\d+$/).transform(Number).optional(),
     limit: z.string().regex(/^\d+$/).transform(Number).optional(),

@@ -11,11 +11,14 @@ export class VitalsController {
   list = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const patientId = Number(req.params.patientId);
-      const { visitId, page, limit } = req.query;
+      const { visitId, dateFrom, dateTo, search, page, limit } = req.query;
 
       const result = await this.service.list({
         patientId,
         visitId: visitId ? Number(visitId) : undefined,
+        dateFrom: dateFrom ? String(dateFrom) : undefined,
+        dateTo: dateTo ? String(dateTo) : undefined,
+        search: search ? String(search) : undefined,
         page: page ? Number(page) : undefined,
         limit: limit ? Number(limit) : undefined,
       });

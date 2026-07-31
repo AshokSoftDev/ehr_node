@@ -7,7 +7,12 @@ const service = new PatientDocumentService();
 export class PatientDocumentController {
   list = catchAsync(async (req: Request, res: Response) => {
     const patientId = Number(req.params.patientId);
-    const documents = await service.list(patientId);
+    const { search, dateFrom, dateTo } = req.query;
+    const documents = await service.list(patientId, {
+      search: search ? String(search) : undefined,
+      dateFrom: dateFrom ? String(dateFrom) : undefined,
+      dateTo: dateTo ? String(dateTo) : undefined,
+    });
     res.json({ status: 'success', data: documents });
   });
 

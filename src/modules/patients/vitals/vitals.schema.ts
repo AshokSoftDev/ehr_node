@@ -13,6 +13,9 @@ export const listVitalsSchema = z.object({
   }),
   query: z.object({
     visitId: z.string().regex(/^\d+$/).transform(Number).optional(),
+    dateFrom: z.preprocess(toDate, z.date().optional()),
+    dateTo: z.preprocess(toDate, z.date().optional()),
+    search: z.string().optional(),
     page: z.string().regex(/^\d+$/).transform(Number).optional(),
     limit: z.string().regex(/^\d+$/).transform(Number).optional(),
   }),

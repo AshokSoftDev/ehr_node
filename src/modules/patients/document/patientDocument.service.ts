@@ -6,8 +6,8 @@ import { CreatePatientDocumentDto, UpdatePatientDocumentDto } from './patientDoc
 const repository = new PatientDocumentRepository();
 
 export class PatientDocumentService {
-  async list(patientId: number) {
-    return repository.listByPatient(patientId);
+  async list(patientId: number, filters?: { search?: string; dateFrom?: string; dateTo?: string }) {
+    return repository.listByPatient(patientId, filters);
   }
 
   async getOne(documentId: number) {

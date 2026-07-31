@@ -13,9 +13,39 @@ export class PatientDocumentRepository {
     return prisma.visitDocument.create({ data });
   }
 
-  listByPatient(patientId: number) {
+  listByPatient(patientId: number, filters?: { search?: string; dateFrom?: string; dateTo?: string }) {
+    const where: any = {
+      patient_id: patientId,
+      status: 1,
+    };
+
+    if (filters?.dateFrom || filters?.dateTo) {
+      where.createdAt = {};
+      if (filters.dateFrom) {
+        const dFrom = new Date(filters.dateFrom);
+        dFrom.setHours(0, 0, 0, 0);
+        where.createdAt.gte = dFrom;
+      }
+      if (filters.dateTo) {
+        const dTo = new Date(filters.dateTo);
+        dTo.setHours(23, 59, 59, 999);
+        where.createdAt.lte = dTo;
+      }
+    }
+
+    if (filters?.search) {
+      const search = filters.search;
+      where.OR = [
+        { file_name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { documentType: { type_name: { contains: search, mode: 'insensitive' } } },
+        { visit: { doctor: { displayName: { contains: search, mode: 'insensitive' } } } },
+        { visit: { visit_type: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
+
     return prisma.visitDocument.findMany({
-      where: { patient_id: patientId, status: 1 },
+      where,
       include: {
         documentType: {
           select: { document_type_id: true, type_name: true },

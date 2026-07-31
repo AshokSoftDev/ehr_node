@@ -6,6 +6,7 @@ export interface VisitFilters {
   patient?: string; // matches MRN or patient name
   patient_id?: number; // direct patient ID filter
   reason?: string;
+  search?: string;
   status?: string; // appointment_status
   page?: number;
   limit?: number;

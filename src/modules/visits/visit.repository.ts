@@ -12,6 +12,7 @@ export class VisitRepository {
       patient,
       patient_id,
       reason,
+      search,
       status,
       page = 1,
       limit = 10,
@@ -49,6 +50,16 @@ export class VisitRepository {
         : {}),
       ...(reason
         ? { reason_for_visit: { contains: reason, mode: 'insensitive' } }
+        : {}),
+      ...(search
+        ? {
+          OR: [
+            { visit_type: { contains: search, mode: 'insensitive' } },
+            { reason_for_visit: { contains: search, mode: 'insensitive' } },
+            { doctor: { displayName: { contains: search, mode: 'insensitive' } } },
+            { doctor: { specialty: { contains: search, mode: 'insensitive' } } },
+          ],
+        }
         : {}),
       patient: {
         activeStatus: 1,

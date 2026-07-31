@@ -4,7 +4,7 @@ import { PaginatedVitalsResponse, VitalFilters } from './vitals.types';
 
 export class VitalsRepository {
   async list(filters: VitalFilters): Promise<PaginatedVitalsResponse> {
-    const { patientId, visitId, page = 1, limit = 50 } = filters;
+    const { patientId, visitId, dateFrom, dateTo, search, page = 1, limit = 50 } = filters;
     const skip = (page - 1) * limit;
 
     const where: Prisma.PatientVitalWhereInput = {
@@ -14,6 +14,47 @@ export class VitalsRepository {
 
     if (visitId !== undefined) {
       where.visit_id = visitId;
+    }
+
+    if (dateFrom || dateTo) {
+      where.vital_date = {};
+      if (dateFrom) {
+        const dFrom = new Date(dateFrom);
+        dFrom.setHours(0, 0, 0, 0);
+        (where.vital_date as any).gte = dFrom;
+      }
+      if (dateTo) {
+        const dTo = new Date(dateTo);
+        dTo.setHours(23, 59, 59, 999);
+        (where.vital_date as any).lte = dTo;
+      }
+    }
+
+    if (search) {
+      const numVal = Number(search);
+      const isNum = !isNaN(numVal);
+      const bpParts = search.split('/').map(s => Number(s.trim()));
+      const isBp = bpParts.length === 2 && !isNaN(bpParts[0]) && !isNaN(bpParts[1]);
+
+      where.OR = [
+        { visit: { visit_type: { contains: search, mode: 'insensitive' } } },
+        ...(isNum
+          ? [
+              { pulse: numVal },
+              { rr: numVal },
+              { bp_systolic: numVal },
+              { bp_diastolic: numVal },
+            ]
+          : []),
+        ...(isBp
+          ? [
+              {
+                bp_systolic: bpParts[0],
+                bp_diastolic: bpParts[1],
+              },
+            ]
+          : []),
+      ] as any;
     }
 
     const client = prisma as any;
