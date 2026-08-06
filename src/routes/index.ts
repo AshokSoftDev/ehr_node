@@ -10,6 +10,7 @@ import masterRoutes from '../modules/master/master.routes';
 import billingRoutes from '../modules/billing/billing.routes';
 import aiChatRoutes from '../modules/ai/aiChat.routes';
 import dashboardRoutes from '../modules/dashboard/dashboard.routes';
+import reportsRoutes from '../modules/reports/reports.routes';
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.use('/master', masterRoutes);
 router.use('/billing', billingRoutes);
 router.use('/ai-chat', aiChatRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/reports', reportsRoutes);
 
 export default router;
 
