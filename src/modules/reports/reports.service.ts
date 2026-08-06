@@ -538,10 +538,17 @@ export class ReportsService {
     page: number;
     limit: number;
   }) {
-    const { start, end } = this.buildDateRange(body.dateFrom, body.dateTo);
     const skip = (body.page - 1) * body.limit;
     const take = body.limit;
-    const order = { [body.sortBy]: body.sortOrder };
+    const order = { [body.sortBy || 'createdAt']: body.sortOrder };
+
+    const dateFilter = (dateField: string) => {
+      if (body.dateFrom || body.dateTo) {
+        const { start, end } = this.buildDateRange(body.dateFrom, body.dateTo);
+        return { [dateField]: { gte: start, lte: end } };
+      }
+      return {};
+    };
 
     let data: any[] = [];
     let totalCount = 0;
@@ -559,14 +566,14 @@ export class ReportsService {
           { key: 'status', header: 'Status' },
         ];
         totalCount = await prisma.invoice.count({
-          where: { invoice_date: { gte: start, lte: end }, deletedAt: null, ...body.filters },
+          where: { deletedAt: null, ...dateFilter('invoice_date'), ...body.filters },
         });
         const invs = await prisma.invoice.findMany({
-          where: { invoice_date: { gte: start, lte: end }, deletedAt: null, ...body.filters },
+          where: { deletedAt: null, ...dateFilter('invoice_date'), ...body.filters },
           include: { patient: { select: { firstName: true, lastName: true, mrn: true } } },
           skip,
           take,
-          orderBy: order,
+          orderBy: body.sortBy && body.sortBy !== 'createdAt' ? { [body.sortBy]: body.sortOrder } : { invoice_date: body.sortOrder },
         });
         data = invs.map((i) => ({
           ...i,
@@ -574,6 +581,34 @@ export class ReportsService {
           mrn: i.patient.mrn,
           net_total: parseFloat(i.net_total.toString()),
           balance_amount: parseFloat(i.balance_amount.toString()),
+        }));
+        break;
+
+      case 'receipts':
+        columns = [
+          { key: 'receipt_number', header: 'Receipt #' },
+          { key: 'patientName', header: 'Patient Name' },
+          { key: 'mrn', header: 'MRN' },
+          { key: 'amount', header: 'Amount ($)' },
+          { key: 'payment_method', header: 'Payment Method' },
+          { key: 'receipt_type', header: 'Type' },
+          { key: 'payment_date', header: 'Payment Date' },
+        ];
+        totalCount = await prisma.receipt.count({
+          where: { deletedAt: null, ...dateFilter('payment_date'), ...body.filters },
+        });
+        const rcpts = await prisma.receipt.findMany({
+          where: { deletedAt: null, ...dateFilter('payment_date'), ...body.filters },
+          include: { patient: { select: { firstName: true, lastName: true, mrn: true } } },
+          skip,
+          take,
+          orderBy: body.sortBy && body.sortBy !== 'createdAt' ? { [body.sortBy]: body.sortOrder } : { payment_date: body.sortOrder },
+        });
+        data = rcpts.map((r) => ({
+          ...r,
+          patientName: `${r.patient.firstName || ''} ${r.patient.lastName || ''}`.trim(),
+          mrn: r.patient.mrn,
+          amount: parseFloat(r.amount.toString()),
         }));
         break;
 
@@ -588,13 +623,13 @@ export class ReportsService {
           { key: 'appointment_status', header: 'Status' },
         ];
         totalCount = await prisma.appointment.count({
-          where: { appointment_date: { gte: start, lte: end }, ...body.filters },
+          where: { ...dateFilter('appointment_date'), ...body.filters },
         });
         const appts = await prisma.appointment.findMany({
-          where: { appointment_date: { gte: start, lte: end }, ...body.filters },
+          where: { ...dateFilter('appointment_date'), ...body.filters },
           skip,
           take,
-          orderBy: { appointment_date: body.sortOrder },
+          orderBy: body.sortBy && body.sortBy !== 'createdAt' ? { [body.sortBy]: body.sortOrder } : { appointment_date: body.sortOrder },
         });
         data = appts.map((a) => ({
           ...a,
@@ -613,10 +648,10 @@ export class ReportsService {
           { key: 'createdAt', header: 'Registered On' },
         ];
         totalCount = await prisma.patient.count({
-          where: { createdAt: { gte: start, lte: end }, activeStatus: 1, ...body.filters },
+          where: { activeStatus: 1, ...dateFilter('createdAt'), ...body.filters },
         });
         const pts = await prisma.patient.findMany({
-          where: { createdAt: { gte: start, lte: end }, activeStatus: 1, ...body.filters },
+          where: { activeStatus: 1, ...dateFilter('createdAt'), ...body.filters },
           skip,
           take,
           orderBy: { createdAt: body.sortOrder },
@@ -637,13 +672,13 @@ export class ReportsService {
           { key: 'reason_for_visit', header: 'Reason / Complaint' },
         ];
         totalCount = await prisma.visit.count({
-          where: { visit_date: { gte: start, lte: end }, status: 1, ...body.filters },
+          where: { status: 1, ...dateFilter('visit_date'), ...body.filters },
         });
         data = await prisma.visit.findMany({
-          where: { visit_date: { gte: start, lte: end }, status: 1, ...body.filters },
+          where: { status: 1, ...dateFilter('visit_date'), ...body.filters },
           skip,
           take,
-          orderBy: { visit_date: body.sortOrder },
+          orderBy: body.sortBy && body.sortBy !== 'createdAt' ? { [body.sortBy]: body.sortOrder } : { visit_date: body.sortOrder },
         });
         break;
 
