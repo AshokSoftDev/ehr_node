@@ -70,15 +70,13 @@ export class ReportsService {
 
   private buildDateRange(from?: Date, to?: Date) {
     if (!from && !to) {
-      // Default to past 30 days if no dates specified
+      // Default to all-time (from 1970) so that historical clinical & demographic datasets always load fully
+      const start = new Date('1970-01-01T00:00:00.000Z');
       const end = new Date();
-      const start = new Date();
-      start.setDate(end.getDate() - 30);
-      start.setHours(0, 0, 0, 0);
       end.setHours(23, 59, 59, 999);
       return { start, end };
     }
-    const start = from || new Date('2020-01-01T00:00:00.000Z');
+    const start = from || new Date('1970-01-01T00:00:00.000Z');
     const end = to || new Date();
     if (to) {
       end.setHours(23, 59, 59, 999);
@@ -236,17 +234,38 @@ export class ReportsService {
 
     const visits = await prisma.visit.findMany({
       where: visitWhere,
-      select: { visit_type: true, reason_for_visit: true, visit_date: true },
+      select: {
+        visit_type: true,
+        reason_for_visit: true,
+        visit_date: true,
+        patient: { select: { mrn: true, title: true, firstName: true, lastName: true, age: true, gender: true } },
+        doctor: { select: { displayName: true, title: true, firstName: true, lastName: true, specialty: true } },
+      },
+      orderBy: { visit_date: 'desc' },
     });
 
     const visitTypesMap: Record<string, number> = {};
     const visitDateMap = new Map<string, number>();
+    const recentEncounters: any[] = [];
+
     visits.forEach((v) => {
       const vt = v.visit_type || 'General Consultation';
       visitTypesMap[vt] = (visitTypesMap[vt] || 0) + 1;
 
       const dateStr = v.visit_date.toISOString().split('T')[0];
       visitDateMap.set(dateStr, (visitDateMap.get(dateStr) || 0) + 1);
+
+      recentEncounters.push({
+        mrn: v.patient.mrn,
+        patientName: `${v.patient.title || ''} ${v.patient.firstName} ${v.patient.lastName}`.trim(),
+        gender: v.patient.gender,
+        age: v.patient.age ?? '-',
+        doctorName: v.doctor ? (v.doctor.displayName || `${v.doctor.title || 'Dr.'} ${v.doctor.firstName} ${v.doctor.lastName}`.trim()) : 'Unassigned',
+        specialty: v.doctor ? (v.doctor.specialty || 'General') : '-',
+        visit_type: v.visit_type || 'General Consultation',
+        reason_for_visit: v.reason_for_visit || '-',
+        visit_date: v.visit_date,
+      });
     });
 
     // Prescriptions trend
@@ -323,6 +342,7 @@ export class ReportsService {
         vitalsRecorded: vitals.length,
         uniqueAllergyProfiles: Object.keys(allergyMap).length,
       },
+      recentEncounters,
       visitTypes: Object.entries(visitTypesMap).map(([name, value]) => ({ name, value })),
       visitTrend: Array.from(visitDateMap.entries())
         .map(([date, count]) => ({ date, count }))
@@ -446,7 +466,8 @@ export class ReportsService {
         ...(params.gender ? { gender: { equals: params.gender, mode: 'insensitive' } } : {}),
         ...(params.city ? { city: { contains: params.city, mode: 'insensitive' } } : {}),
       },
-      select: { gender: true, age: true, dateOfBirth: true, city: true, referalSource: true, createdAt: true },
+      select: { mrn: true, title: true, firstName: true, lastName: true, gender: true, age: true, dateOfBirth: true, city: true, mobileNumber: true, referalSource: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
     });
 
     const genderMap: Record<string, number> = {};
@@ -460,6 +481,7 @@ export class ReportsService {
       elderly: 0, // 65+
     };
     const growthMap = new Map<string, number>();
+    const patientRegister: any[] = [];
 
     const nowYear = new Date().getFullYear();
 
@@ -492,6 +514,17 @@ export class ReportsService {
       // Monthly registration growth
       const mStr = p.createdAt.toISOString().slice(0, 7); // YYYY-MM
       growthMap.set(mStr, (growthMap.get(mStr) || 0) + 1);
+
+      patientRegister.push({
+        mrn: p.mrn,
+        patientName: `${p.title || ''} ${p.firstName} ${p.lastName}`.trim(),
+        gender: p.gender || '-',
+        age: calculatedAge ?? '-',
+        mobileNumber: p.mobileNumber || '-',
+        city: p.city || 'Unknown City',
+        referalSource: p.referalSource || 'Direct / Walk-In',
+        registeredOn: p.createdAt,
+      });
     });
 
     const topCities = Object.entries(cityMap)
@@ -509,6 +542,7 @@ export class ReportsService {
         topCity: topCities.length > 0 ? topCities[0].city : 'N/A',
         mostCommonReferral: referralDistribution.length > 0 ? referralDistribution[0].name : 'Walk-in',
       },
+      patientRegister,
       genderSplit: Object.entries(genderMap).map(([name, value]) => ({ name, value })),
       ageDistribution: [
         { cohort: 'Pediatric (<18 yrs)', count: ageBuckets.pediatric },
